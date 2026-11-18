@@ -79,6 +79,8 @@ public class SecurityConfig {
                     // Publico
                     .requestMatchers(antMatcher("/api/auth/**")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/planes")).permitAll()
+                    // Blog: "mis publicaciones" pide sesion aunque sea un GET
+                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/noticias/mias")).authenticated()
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/productos/**"),
                             antMatcher(HttpMethod.GET, "/api/marcas/**"),
                             antMatcher(HttpMethod.GET, "/api/categorias/**"),
@@ -93,8 +95,9 @@ public class SecurityConfig {
                     .requestMatchers(antMatcher(HttpMethod.PATCH, "/api/usuarios/**")).hasRole(ADMIN)
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/suscripciones")).hasRole(ADMIN)
                     .requestMatchers(antMatcher("/api/productos/**"), antMatcher("/api/marcas/**"),
-                            antMatcher("/api/categorias/**"), antMatcher("/api/noticias/**")).hasRole(ADMIN)
-                    // Todo lo demas requiere sesion (perfil propio, suscripciones propias)
+                            antMatcher("/api/categorias/**")).hasRole(ADMIN)
+                    // Todo lo demas requiere sesion (perfil propio, suscripciones propias y
+                    // publicar en el blog: el plan activo o la autoria se validan en NoticiaServiceImpl)
                     .anyRequest().authenticated())
             .addFilterBefore(new JwtAuthenticationFilter(jwtService, usuarioRepository),
                     UsernamePasswordAuthenticationFilter.class);

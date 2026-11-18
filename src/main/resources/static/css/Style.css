@@ -1371,3 +1371,49 @@ footer {
 #blog-filtros { margin: 1.5rem 0 2rem; }
 #blog-filtros[hidden] { display: none; }
 .blog-filtro-n { opacity: .6; font-size: .8em; margin-left: .15rem; }
+
+/* Página Blog: botón "Crear publicación" (solo admin) y su menú de tipos */
+.blog-crear { position: relative; margin-top: 1.5rem; display: inline-block; }
+.blog-crear[hidden], .blog-crear-menu[hidden] { display: none; }
+.blog-crear-menu {
+  position: absolute; top: calc(100% + .5rem); left: 0; z-index: 20;
+  width: min(560px, calc(100vw - 2.5rem)); padding: 1rem;
+  background: rgba(17,17,24,0.96); border: 1px solid rgba(124,58,237,0.35);
+  border-radius: 16px; box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+  backdrop-filter: blur(14px);
+}
+.blog-crear-titulo { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gray, #9ca3af); margin-bottom: .75rem; }
+.blog-crear-opciones { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; }
+.blog-crear-opcion {
+  display: flex; align-items: center; gap: .75rem; text-align: left; cursor: pointer;
+  padding: .7rem .8rem; border-radius: 12px; color: inherit; font: inherit;
+  background: var(--tint-soft); border: 1px solid var(--tint-line);
+  transition: border-color .2s, transform .2s;
+}
+.blog-crear-opcion:hover, .blog-crear-opcion:focus-visible { border-color: var(--tint); transform: translateY(-1px); outline: none; }
+.blog-crear-emoji { font-size: 1.4rem; }
+.blog-crear-opcion strong { display: block; font-size: .95rem; }
+.blog-crear-opcion small { display: block; font-size: .78rem; opacity: .7; margin-top: .1rem; }
+@media (max-width: 560px) { .blog-crear-opciones { grid-template-columns: 1fr; } }
+
+/* Página Blog: aviso para quien todavía no puede publicar */
+.blog-aviso-plan {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem;
+  margin-top: 1.5rem; padding: .85rem 1rem; border-radius: 14px;
+  background: rgba(124,58,237,0.08); border: 1px dashed rgba(124,58,237,0.4);
+  color: var(--gray, #9ca3af); font-size: .92rem; width: fit-content; max-width: 100%;
+}
+.blog-aviso-plan[hidden] { display: none; }
+.blog-aviso-plan .btn { padding: .45rem 1rem; font-size: .85rem; }
+
+/* Editar / Eliminar en las tarjetas propias */
+.news-card { position: relative; }
+.news-acciones { position: absolute; top: .6rem; right: .6rem; display: flex; gap: .35rem; z-index: 2; }
+.news-accion {
+  font: inherit; font-size: .75rem; cursor: pointer; color: #fff;
+  padding: .3rem .6rem; border-radius: 999px;
+  background: rgba(10,10,15,0.75); border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+}
+.news-accion:hover, .news-accion:focus-visible { border-color: var(--tint, #7c3aed); outline: none; }
+.news-accion-borrar:hover { border-color: #ef4444; }

@@ -33,6 +33,11 @@ function showPage(page) {
     activeButton.classList.add('active');
   }
 
+  // En el Blog se revisa si la sesión puede publicar (admin o plan activo)
+  if (page === 'blog' && typeof window.actualizarAccionesBlog === 'function') {
+    window.actualizarAccionesBlog();
+  }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

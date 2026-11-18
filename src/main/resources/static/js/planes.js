@@ -78,6 +78,8 @@ async function manejarClicPlan(event) {
     await suscribirseAPlan(planId);
     mostrarExito('¡Suscripción realizada con éxito!');
     await cargarPlanes();
+    // Con plan activo ya puede publicar en el blog
+    if (typeof window.actualizarAccionesBlog === 'function') window.actualizarAccionesBlog();
   } catch (error) {
     mostrarError(error.message);
     boton.disabled = false;

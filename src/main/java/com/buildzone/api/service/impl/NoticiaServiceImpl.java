@@ -1,8 +1,10 @@
 package com.buildzone.api.service.impl;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,14 +13,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.buildzone.api.dto.NoticiaRequest;
 import com.buildzone.api.dto.NoticiaResponse;
+import com.buildzone.api.exception.AccesoDenegadoException;
 import com.buildzone.api.exception.RecursoNoEncontradoException;
 import com.buildzone.api.model.Autor;
 import com.buildzone.api.model.Noticia;
 import com.buildzone.api.model.Usuario;
+import com.buildzone.api.model.enums.Rol;
 import com.buildzone.api.repository.AutorRepository;
 import com.buildzone.api.repository.NoticiaRepository;
 import com.buildzone.api.repository.UsuarioRepository;
+import com.buildzone.api.security.UsuarioAutenticado;
 import com.buildzone.api.service.NoticiaService;
+import com.buildzone.api.service.SuscripcionService;
 
 /**
  * Implementacion de {@link NoticiaService}.
@@ -37,14 +43,17 @@ public class NoticiaServiceImpl implements NoticiaService {
     private final NoticiaRepository noticiaRepository;
     private final AutorRepository autorRepository;
     private final UsuarioRepository usuarioRepository;
+    private final SuscripcionService suscripcionService;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
 
     public NoticiaServiceImpl(NoticiaRepository noticiaRepository, AutorRepository autorRepository,
-                              UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, Clock clock) {
+                              UsuarioRepository usuarioRepository, SuscripcionService suscripcionService,
+                              PasswordEncoder passwordEncoder, Clock clock) {
         this.noticiaRepository = noticiaRepository;
         this.autorRepository = autorRepository;
         this.usuarioRepository = usuarioRepository;
+        this.suscripcionService = suscripcionService;
         this.passwordEncoder = passwordEncoder;
         this.clock = clock;
     }
@@ -62,27 +71,72 @@ public class NoticiaServiceImpl implements NoticiaService {
     }
 
     @Override
+    public List<NoticiaResponse> listarMias(UsuarioAutenticado actual) {
+        String correo = cuentaDe(actual).getEmail();
+        return noticiaRepository.findAllByOrderByFechaPublicacionDescIdNoticiaDesc().stream()
+                .filter(n -> n.getAutor() != null && n.getAutor().getCorreo().equalsIgnoreCase(correo))
+                .map(NoticiaResponse::new)
+                .toList();
+    }
+
+    @Override
     @Transactional
-    public NoticiaResponse crear(NoticiaRequest request, Long idUsuario) {
+    public NoticiaResponse crear(NoticiaRequest request, UsuarioAutenticado actual) {
+        if (!esAdmin(actual) && !tienePlanDePago(actual)) {
+            throw new AccesoDenegadoException(
+                    "Necesitas un plan de pago activo (mensual o anual) para publicar en el blog.");
+        }
         Noticia noticia = new Noticia();
         copiarDatos(request, noticia);
-        noticia.setAutor(autorDeLaCuenta(idUsuario));
+        noticia.setAutor(autorDeLaCuenta(cuentaDe(actual)));
         noticia.setFechaPublicacion(LocalDateTime.now(clock));
         return new NoticiaResponse(noticiaRepository.save(noticia));
     }
 
     @Override
     @Transactional
-    public NoticiaResponse actualizar(Integer id, NoticiaRequest request) {
+    public NoticiaResponse actualizar(Integer id, NoticiaRequest request, UsuarioAutenticado actual) {
         Noticia noticia = buscarOFallar(id);
+        exigirPermisoSobre(noticia, actual);
         copiarDatos(request, noticia);
         return new NoticiaResponse(noticiaRepository.save(noticia));
     }
 
     @Override
     @Transactional
-    public void eliminar(Integer id) {
-        noticiaRepository.delete(buscarOFallar(id));
+    public void eliminar(Integer id, UsuarioAutenticado actual) {
+        Noticia noticia = buscarOFallar(id);
+        exigirPermisoSobre(noticia, actual);
+        noticiaRepository.delete(noticia);
+    }
+
+    /** Suscripcion vigente a un plan con precio (Premium mensual o anual); el Gratuito no cuenta. */
+    private boolean tienePlanDePago(UsuarioAutenticado actual) {
+        return suscripcionService.obtenerActiva(actual.id())
+                .map(s -> s.plan() != null && s.plan().precio() != null
+                        && s.plan().precio().compareTo(BigDecimal.ZERO) > 0)
+                .orElse(false);
+    }
+
+    private static boolean esAdmin(UsuarioAutenticado actual) {
+        return actual.rol() == Rol.ADMIN;
+    }
+
+    /** El ADMIN puede con cualquier publicacion; los demas, solo con las suyas. */
+    private void exigirPermisoSobre(Noticia noticia, UsuarioAutenticado actual) {
+        if (esAdmin(actual)) {
+            return;
+        }
+        String correoAutor = noticia.getAutor() == null ? null : noticia.getAutor().getCorreo();
+        String correoCuenta = cuentaDe(actual).getEmail();
+        if (correoAutor == null || !Objects.equals(correoAutor.toLowerCase(), correoCuenta.toLowerCase())) {
+            throw new AccesoDenegadoException("Solo puedes modificar tus propias publicaciones.");
+        }
+    }
+
+    private Usuario cuentaDe(UsuarioAutenticado actual) {
+        return usuarioRepository.findById(actual.id())
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe la cuenta con id " + actual.id()));
     }
 
     private void copiarDatos(NoticiaRequest request, Noticia noticia) {
@@ -105,15 +159,13 @@ public class NoticiaServiceImpl implements NoticiaService {
     }
 
     /**
-     * Perfil de autor (tabla usuario) del administrador que publica. Se busca
+     * Perfil de autor (tabla usuario) de la cuenta que publica. Se busca
      * por el correo de su cuenta; si es su primera noticia se crea con su
      * nombre y apellido. La columna contrasena es obligatoria en el modelo
      * original, asi que se guarda el hash de un valor aleatorio: este perfil
      * no sirve para iniciar sesion.
      */
-    private Autor autorDeLaCuenta(Long idUsuario) {
-        Usuario cuenta = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RecursoNoEncontradoException("No existe la cuenta con id " + idUsuario));
+    private Autor autorDeLaCuenta(Usuario cuenta) {
         return autorRepository.findByCorreoIgnoreCase(cuenta.getEmail())
                 .orElseGet(() -> autorRepository.save(new Autor(
                         recortar(cuenta.getNombre(), 50),

@@ -296,6 +296,21 @@
       <h2 class="section-title">Últimas noticias</h2>
       <p class="section-sub">Guías, tutoriales y novedades para armar y mejorar tu PC.</p>
 
+      <!-- Lo ven el administrador y los usuarios con plan activo
+           (js/blog.js, actualizarAccionesBlog) -->
+      <div class="blog-crear" id="blog-crear" hidden>
+        <button class="btn btn-primary" id="btn-crear-publicacion" type="button" aria-expanded="false" aria-controls="blog-crear-menu">＋ Crear publicación</button>
+        <div class="blog-crear-menu" id="blog-crear-menu" hidden>
+          <div class="blog-crear-titulo">¿Qué quieres publicar?</div>
+          <div class="blog-crear-opciones" id="blog-crear-opciones"></div>
+        </div>
+      </div>
+      <!-- Para visitantes y usuarios sin plan: cómo conseguir el botón -->
+      <div class="blog-aviso-plan" id="blog-aviso-plan" hidden>
+        <span id="blog-aviso-texto">¿Quieres publicar? Con un plan Premium, mensual o anual, puedes crear noticias, tutoriales, guías y notas.</span>
+        <button class="btn btn-outline" type="button" onclick="showPage('planes')">Ver planes</button>
+      </div>
+
       <div class="product-filters" id="blog-filtros"></div>
       <div class="news-grid" id="news-grid"></div>
     </div>

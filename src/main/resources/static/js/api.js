@@ -278,6 +278,11 @@ function actualizarNoticia(id, { titulo, categoria, resumen, contenido }) {
   return peticionApi(`/noticias/${id}`, { method: 'PUT', body: { titulo, categoria, resumen, contenido } });
 }
 
+/** Publicaciones de la cuenta en sesión (para mostrarle Editar / Eliminar). */
+function listarMisNoticias() {
+  return peticionApi('/noticias/mias');
+}
+
 function eliminarNoticia(id) {
   return peticionApi(`/noticias/${id}`, { method: 'DELETE' });
 }

@@ -27,6 +27,9 @@ function actualizarNavSegunSesion() {
   const userArea = document.getElementById('nav-user-area');
   const navAdmin = document.getElementById('nav-admin');
 
+  // Botón "Crear publicación" de la página Blog (solo ADMIN)
+  if (window.actualizarAccionesBlog) window.actualizarAccionesBlog();
+
   if (!loginBtn || !userArea) return;
 
   if (!usuarioActual) {

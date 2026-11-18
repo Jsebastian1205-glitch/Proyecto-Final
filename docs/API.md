@@ -88,7 +88,9 @@ src/main/java/com/buildzone/api/
 | `GET /api/productos`, `/api/marcas`, `/api/categorias` (y `/{id}`) | ✅ | ✅ | ✅ |
 | `POST/PUT/DELETE` de productos, marcas y categorías | ❌ 401 | ❌ 403 | ✅ |
 | `GET /api/noticias` (y `/{id}`) | ✅ | ✅ | ✅ |
-| `POST/PUT/DELETE /api/noticias` | ❌ 401 | ❌ 403 | ✅ |
+| `GET /api/noticias/mias` | ❌ 401 | ✅ | ✅ |
+| `POST /api/noticias` | ❌ 401 | ✅ (con plan de pago activo, mensual o anual; Gratuito o sin plan 403) | ✅ |
+| `PUT/DELETE /api/noticias/{id}` | ❌ 401 | ✅ (solo las propias) | ✅ |
 | `GET /api/planes` | ✅ | ✅ | ✅ |
 | `GET /api/planes/todos`, `POST/PUT/DELETE /api/planes` | ❌ 401 | ❌ 403 | ✅ |
 | `GET/PUT /api/usuarios/me`, `PUT /api/usuarios/me/password` | ❌ 401 | ✅ | ✅ |
@@ -167,7 +169,9 @@ Cada recurso tiene los 5 endpoints CRUD (`GET` lista, `GET /{id}`, `POST`, `PUT 
 CRUD de la tabla `noticia` (`GET` lista, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`).
 Body: `{"titulo","categoria","resumen","contenido"}` (resumen opcional: si va vacío se toma
 el inicio del contenido). La lista viene de la más reciente a la más antigua y cada noticia
-incluye `fechaPublicacion` y `autor` (el administrador que la publicó).
+incluye `fechaPublicacion` y `autor` (quien la publicó).
+Pueden publicar el ADMIN y los usuarios con una suscripción activa a un plan de pago (mensual o anual); cada usuario edita
+y elimina solo sus publicaciones (`GET /api/noticias/mias` las lista) y el ADMIN, todas.
 
 ### Formato de error (todas las rutas)
 
