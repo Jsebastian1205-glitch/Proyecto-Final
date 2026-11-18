@@ -87,6 +87,8 @@ src/main/java/com/buildzone/api/
 | `POST /api/auth/registro`, `POST /api/auth/login` | ✅ | ✅ | ✅ |
 | `GET /api/productos`, `/api/marcas`, `/api/categorias` (y `/{id}`) | ✅ | ✅ | ✅ |
 | `POST/PUT/DELETE` de productos, marcas y categorías | ❌ 401 | ❌ 403 | ✅ |
+| `GET /api/noticias` (y `/{id}`) | ✅ | ✅ | ✅ |
+| `POST/PUT/DELETE /api/noticias` | ❌ 401 | ❌ 403 | ✅ |
 | `GET /api/planes` | ✅ | ✅ | ✅ |
 | `GET /api/planes/todos`, `POST/PUT/DELETE /api/planes` | ❌ 401 | ❌ 403 | ✅ |
 | `GET/PUT /api/usuarios/me`, `PUT /api/usuarios/me/password` | ❌ 401 | ✅ | ✅ |
@@ -159,6 +161,13 @@ Cada recurso tiene los 5 endpoints CRUD (`GET` lista, `GET /{id}`, `POST`, `PUT 
   intenta borrar una marca o categoría que todavía tiene productos, la respuesta es 409.
 - Producto: body `{"nombre","descripcion","imagen","idMarca","idCategoria"}`. La respuesta
   incluye `nombreMarca` y `nombreCategoria`.
+
+### Blog — `/api/noticias`
+
+CRUD de la tabla `noticia` (`GET` lista, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`).
+Body: `{"titulo","categoria","resumen","contenido"}` (resumen opcional: si va vacío se toma
+el inicio del contenido). La lista viene de la más reciente a la más antigua y cada noticia
+incluye `fechaPublicacion` y `autor` (el administrador que la publicó).
 
 ### Formato de error (todas las rutas)
 

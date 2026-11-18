@@ -135,56 +135,10 @@
   <section class="section" id="blog-section">
     <div class="section-label">Blog</div>
     <h2 class="section-title">Últimas noticias</h2>
-    <div class="news-grid" style="margin-top:2rem">
-      <div class="news-card cat-tint-cpu" data-article="cpu-guide">
-  <div class="news-thumb"><svg width="76" height="76" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 14h36v36H14zM24 24h16v16H24zM20 6v8M28 6v8M36 6v8M44 6v8M20 50v8M28 50v8M36 50v8M44 50v8M6 20h8M6 28h8M6 36h8M6 44h8M50 20h8M50 28h8M50 36h8M50 44h8"></path></svg></div>
-  <div class="news-body">
-    <div class="news-tag">Guías</div>
-    <div class="news-title">Cómo elegir el mejor procesador para tu PC en 2025</div>
-    <div class="news-link">Leer más →</div>
-  </div>
-</div>
-<div class="news-card cat-tint-otros" data-article="build-guide">
-  <div class="news-thumb"><svg width="76" height="76" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 4h28v56H18zM24 10h16v20H24zM36 44a4 4 0 1 1-8 0a4 4 0 1 1 8 0zM24 54h16"></path></svg></div>
-  <div class="news-body">
-    <div class="news-tag">Tutorial</div>
-    <div class="news-title">Guía para armar tu PC paso a paso sin errores</div>
-    <div class="news-link">Leer más →</div>
-  </div>
-</div>
-<div class="news-card cat-tint-gpu" data-article="gpu-2025">
-  <div class="news-thumb"><svg width="76" height="76" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16h56v28H4zM29 30a9 9 0 1 1-18 0a9 9 0 1 1 18 0zM53 30a9 9 0 1 1-18 0a9 9 0 1 1 18 0zM22 30a2 2 0 1 1-4 0a2 2 0 1 1 4 0zM46 30a2 2 0 1 1-4 0a2 2 0 1 1 4 0zM16 44v6h24v-6"></path></svg></div>
-  <div class="news-body">
-    <div class="news-tag">Novedades</div>
-    <div class="news-title">Nuevas GPUs lanzadas en 2025: análisis completo</div>
-    <div class="news-link">Leer más →</div>
-  </div>
-</div>
-<div class="news-card cat-tint-ram" data-article="ram-guide">
-  <div class="news-thumb"><svg width="76" height="76" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h56v20H4zM9 25h9v10H9zM22 25h9v10h-9zM35 25h9v10h-9zM48 25h7v10h-7zM8 40v6M14 40v6M20 40v6M26 40v6M36 40v6M42 40v6M48 40v6M54 40v6"></path></svg></div>
-  <div class="news-body">
-    <div class="news-tag">Guías</div>
-    <div class="news-title">RAM: ¿cuánta necesitas y qué velocidad elegir?</div>
-    <div class="news-link">Leer más →</div>
-  </div>
-</div>
-<div class="news-card cat-tint-refrigeracion" data-article="cooling-guide">
-  <div class="news-thumb"><svg width="76" height="76" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h56v22H4zM21 17a7 7 0 1 1-14 0a7 7 0 1 1 14 0zM39 17a7 7 0 1 1-14 0a7 7 0 1 1 14 0zM57 17a7 7 0 1 1-14 0a7 7 0 1 1 14 0zM22 28c0 10 2 14 6 18M36 28c0 10-2 14-4 18M22 46h20v12H22z"></path></svg></div>
-  <div class="news-body">
-    <div class="news-tag">Tutorial</div>
-    <div class="news-title">Refrigeración líquida vs aire: cuál conviene más</div>
-    <div class="news-link">Leer más →</div>
-  </div>
-</div>
-<div class="news-card cat-tint-ambar" data-article="amd-vs-intel">
-  <div class="news-thumb"><svg width="76" height="76" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M32 8v46M18 56h28M10 16h44M16 16l-8 18h16zM48 16l-8 18h16zM8 34a8 5 0 0 0 16 0M40 34a8 5 0 0 0 16 0"></path></svg></div>
-  <div class="news-body">
-    <div class="news-tag">Comparativas</div>
-    <div class="news-title">AMD vs Intel en 2025: ¿quién gana en relación precio-rendimiento?</div>
-    <div class="news-link">Leer más →</div>
-  </div>
-</div>
-      </div>
+    <!-- Las tarjetas las dibuja js/blog.js con las noticias de la API
+         (GET /api/noticias); el administrador las publica desde Panel > Blog. -->
+    <div class="news-grid" id="news-grid" style="margin-top:2rem"></div>
+    <div class="news-mas"><button class="btn btn-outline" id="btn-mas-noticias" type="button" hidden>Ver todas las noticias</button></div>
   </section>
 
   <!-- Pie de página con enlaces secundarios -->
@@ -432,6 +386,7 @@
         <button class="account-tab" data-admin-tab="planes">Planes</button>
         <button class="account-tab" data-admin-tab="suscripciones">Suscripciones</button>
         <button class="account-tab" data-admin-tab="catalogo">Catálogo</button>
+        <button class="account-tab" data-admin-tab="blog">Blog</button>
       </div>
 
       <div class="account-panel active" id="admin-panel-usuarios">
@@ -475,6 +430,20 @@
           <table class="admin-table" id="admin-catalogo-table">
             <thead>
               <tr><th>Producto</th><th>Marca</th><th>Categoría</th><th>Acciones</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="account-panel" id="admin-panel-blog">
+        <div style="text-align:right;margin-bottom:1rem">
+          <button class="btn btn-primary" id="btn-nueva-noticia" type="button">+ Nueva noticia</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="admin-blog-table">
+            <thead>
+              <tr><th>Título</th><th>Categoría</th><th>Publicada</th><th>Acciones</th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -526,6 +495,37 @@
         <select class="form-input" id="producto-categoria" required></select>
       </div>
       <button type="submit" class="btn btn-primary btn-full" id="producto-form-submit">Guardar producto</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de noticia (crear / editar) usado por la pestaña Blog -->
+<div class="modal-overlay" id="noticia-modal">
+  <div class="modal modal-ancho">
+    <div class="modal-close" data-close-noticia-modal="true">✕</div>
+    <div class="modal-header">
+      <div class="modal-icon">⬡</div>
+      <div class="modal-title" id="noticia-modal-title">Nueva noticia</div>
+    </div>
+    <form id="noticia-form">
+      <input type="hidden" id="noticia-id">
+      <div class="form-group">
+        <label class="form-label" for="noticia-titulo">Título</label>
+        <input type="text" class="form-input" id="noticia-titulo" maxlength="200" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="noticia-categoria">Categoría</label>
+        <select class="form-input" id="noticia-categoria" required></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="noticia-resumen">Resumen (opcional)</label>
+        <textarea class="form-input" id="noticia-resumen" rows="2" maxlength="300" placeholder="Si lo dejas vacío se toma el inicio del contenido"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="noticia-contenido">Contenido</label>
+        <textarea class="form-input" id="noticia-contenido" rows="10" maxlength="20000" required placeholder="Deja una línea en blanco entre párrafos"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="noticia-form-submit">Publicar noticia</button>
     </form>
   </div>
 </div>
@@ -662,6 +662,7 @@
       <div class="modal-icon" id="article-icon">🖥️</div>
       <div class="article-tag" id="article-tag">Guías</div>
       <div class="modal-title" id="article-title">Título del artículo</div>
+      <div class="article-meta" id="article-meta"></div>
     </div>
     <div class="article-body" id="article-body"></div>
   </div>
@@ -674,6 +675,7 @@
 <script src="js/cuenta.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/catalogo.js"></script>
+<script src="js/blog.js"></script>
 <script src="js/script.js"></script>
 </body>
 </html>

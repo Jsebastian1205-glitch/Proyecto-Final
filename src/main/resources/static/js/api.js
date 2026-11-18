@@ -262,3 +262,22 @@ function listarCategorias() {
 function crearCategoria({ nombre, descripcion }) {
   return peticionApi('/categorias', { method: 'POST', body: { nombre, descripcion } });
 }
+
+// ── Blog (/api/noticias) ──
+// Leer es público; publicar, editar y eliminar exige rol ADMIN.
+
+function listarNoticias() {
+  return peticionApi('/noticias', { conAuth: false });
+}
+
+function crearNoticia({ titulo, categoria, resumen, contenido }) {
+  return peticionApi('/noticias', { method: 'POST', body: { titulo, categoria, resumen, contenido } });
+}
+
+function actualizarNoticia(id, { titulo, categoria, resumen, contenido }) {
+  return peticionApi(`/noticias/${id}`, { method: 'PUT', body: { titulo, categoria, resumen, contenido } });
+}
+
+function eliminarNoticia(id) {
+  return peticionApi(`/noticias/${id}`, { method: 'DELETE' });
+}

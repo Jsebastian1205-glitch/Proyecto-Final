@@ -63,18 +63,7 @@ function toggleArticle(show) {
   document.body.style.overflow = show ? 'hidden' : '';
 }
 
-// Llena el modal de artículo con el contenido correspondiente y lo abre
-function openArticle(articleId) {
-  const article = ARTICLES[articleId];
-  if (!article) return;
-
-  document.getElementById('article-icon').textContent = article.icon;
-  document.getElementById('article-tag').textContent = article.tag;
-  document.getElementById('article-title').textContent = article.title;
-  document.getElementById('article-body').textContent = article.body;
-
-  toggleArticle(true);
-}
+// El contenido del modal de artículo lo llena js/blog.js (abrirNoticia).
 
 // Datos locales de productos. Al cargar la página, catalogo.js los
 // reemplaza por los productos reales de la API (GET /api/productos) y usa
@@ -374,7 +363,8 @@ const CATEGORY_LABELS = {
   accesorios: 'Accesorio', fuentes: 'Fuente de Poder', monitores: 'Monitor',
 };
 
-// Contenido de prueba de los artículos del blog
+// Artículos de respaldo del blog: js/blog.js los muestra solo si la API
+// (GET /api/noticias) no responde. Los reales se publican desde Panel > Blog.
 const ARTICLES = {
   'cpu-guide': { icon: '🖥️', tag: 'Guías', title: 'Cómo elegir el mejor procesador para tu PC en 2025',
     body: 'Antes de comprar un procesador define primero para qué lo vas a usar: gaming, edición de video o trabajo de oficina. Compara núcleos, hilos y velocidad, y no olvides revisar que sea compatible con tu placa madre antes de decidir.' },
@@ -1339,9 +1329,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  document.querySelectorAll('[data-article]').forEach((card) => {
-    card.addEventListener('click', () => openArticle(card.dataset.article));
-  });
 
   // Los botones de login pueden abrir el modal directamente, o bien delegar
   // en auth.js (si el usuario ya inició sesión, auth.js reemplaza este
@@ -1438,6 +1425,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof window.inicializarCuenta === 'function') window.inicializarCuenta();
   if (typeof window.inicializarAdmin === 'function') window.inicializarAdmin();
   if (typeof window.inicializarCatalogo === 'function') window.inicializarCatalogo();
+  if (typeof window.inicializarBlog === 'function') window.inicializarBlog();
 
   showPage('inicio');
 });

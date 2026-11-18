@@ -22,7 +22,7 @@ Proyecto Sena 1/
 │   └── static/                        Front-end (lo sirve Spring Boot tal cual)
 │       ├── index.html
 │       ├── css/Style.css
-│       └── js/  ui.js · api.js · auth.js · planes.js · cuenta.js · admin.js · catalogo.js · script.js
+│       └── js/  ui.js · api.js · auth.js · planes.js · cuenta.js · admin.js · catalogo.js · blog.js · script.js
 ├── database/mysql/              Scripts SQL (00 y 01 tablas, 02 datos); la API los ejecuta al arrancar
 ├── docs/API.md                  Detalle de la API: paquetes, seguridad, endpoints
 └── backend-java/                Módulo de consola JDBC (etapa anterior, independiente)
@@ -37,6 +37,7 @@ Proyecto Sena 1/
 | `js/cuenta.js` | Mi cuenta: perfil, contraseña, suscripción e historial |
 | `js/admin.js` | Panel admin: usuarios, planes y suscripciones |
 | `js/catalogo.js` | Catálogo desde la API + pestaña Catálogo del panel admin |
+| `js/blog.js` | Noticias del blog desde la API + pestaña Blog del panel admin |
 | `js/script.js` | Navegación entre páginas, productos, comparador, blog, contacto |
 
 ## Arquitectura

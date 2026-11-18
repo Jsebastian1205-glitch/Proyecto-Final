@@ -1,6 +1,7 @@
 /**
  * Panel de administración: gestión de usuarios (rol/estado), CRUD de
  * planes de suscripción y visualización de todas las suscripciones.
+ * Las pestañas Catálogo y Blog viven en catalogo.js y blog.js.
  * Todos los endpoints que usa este módulo exigen rol ADMIN en el backend;
  * el acceso a la página ya está bloqueado en script.js (showPage) para
  * quien no sea admin, así que aquí se asume que sí lo es.
@@ -260,6 +261,7 @@ async function cargarAdmin() {
     cargarPlanesAdmin(),
     cargarSuscripcionesAdmin(),
     window.cargarCatalogoAdmin ? window.cargarCatalogoAdmin() : Promise.resolve(),
+    window.cargarBlogAdmin ? window.cargarBlogAdmin() : Promise.resolve(),
   ]);
 }
 

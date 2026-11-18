@@ -4,7 +4,8 @@
 --
 -- Misma estructura que la base "buildzone" exportada de phpMyAdmin
 -- (categoria, marca, producto, especificacion, fuente_precio, precio,
--- usuario, noticia, comparacion, detalle_comparacion).
+-- usuario, noticia, comparacion, detalle_comparacion). La tabla noticia
+-- lleva ademas las columnas categoria y resumen que usa el blog.
 --
 -- Usa CREATE TABLE IF NOT EXISTS: si la tabla ya existe NO la toca, asi
 -- que es seguro en la base actual y permite crear todo desde cero en una
@@ -90,12 +91,34 @@ CREATE TABLE IF NOT EXISTS noticia (
     id_noticia        INT(11)      NOT NULL AUTO_INCREMENT,
     id_usuario        INT(11)      NOT NULL,
     titulo            VARCHAR(200) NOT NULL,
+    categoria         VARCHAR(50)  DEFAULT NULL,
+    resumen           VARCHAR(300) DEFAULT NULL,
     contenido         TEXT         NOT NULL,
     fecha_publicacion DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_noticia),
     KEY fk_noticia_usuario (id_usuario),
     CONSTRAINT fk_noticia_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- Blog: columnas categoria y resumen de la tabla noticia.
+-- Las bases creadas antes de esta version tienen la tabla sin ellas; aqui
+-- se agregan solo si faltan (se consulta information_schema y se arma el
+-- ALTER con PREPARE, que funciona igual en MariaDB y en MySQL 8).
+-- ---------------------------------------------------------------------
+SET @falta = (SELECT COUNT(*) = 0 FROM information_schema.COLUMNS
+              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'noticia' AND COLUMN_NAME = 'categoria');
+SET @sql = IF(@falta, 'ALTER TABLE noticia ADD COLUMN categoria VARCHAR(50) DEFAULT NULL AFTER titulo', 'DO 0');
+PREPARE paso FROM @sql;
+EXECUTE paso;
+DEALLOCATE PREPARE paso;
+
+SET @falta = (SELECT COUNT(*) = 0 FROM information_schema.COLUMNS
+              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'noticia' AND COLUMN_NAME = 'resumen');
+SET @sql = IF(@falta, 'ALTER TABLE noticia ADD COLUMN resumen VARCHAR(300) DEFAULT NULL AFTER categoria', 'DO 0');
+PREPARE paso FROM @sql;
+EXECUTE paso;
+DEALLOCATE PREPARE paso;
 
 CREATE TABLE IF NOT EXISTS comparacion (
     id_comparacion INT(11)      NOT NULL AUTO_INCREMENT,

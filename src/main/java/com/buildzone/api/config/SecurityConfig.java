@@ -81,7 +81,8 @@ public class SecurityConfig {
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/planes")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/productos/**"),
                             antMatcher(HttpMethod.GET, "/api/marcas/**"),
-                            antMatcher(HttpMethod.GET, "/api/categorias/**")).permitAll()
+                            antMatcher(HttpMethod.GET, "/api/categorias/**"),
+                            antMatcher(HttpMethod.GET, "/api/noticias/**")).permitAll()
                     .requestMatchers(antMatcher("/h2-console/**"), antMatcher("/error")).permitAll()
                     // Solo ADMIN
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/planes/todos")).hasRole(ADMIN)
@@ -92,7 +93,7 @@ public class SecurityConfig {
                     .requestMatchers(antMatcher(HttpMethod.PATCH, "/api/usuarios/**")).hasRole(ADMIN)
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/suscripciones")).hasRole(ADMIN)
                     .requestMatchers(antMatcher("/api/productos/**"), antMatcher("/api/marcas/**"),
-                            antMatcher("/api/categorias/**")).hasRole(ADMIN)
+                            antMatcher("/api/categorias/**"), antMatcher("/api/noticias/**")).hasRole(ADMIN)
                     // Todo lo demas requiere sesion (perfil propio, suscripciones propias)
                     .anyRequest().authenticated())
             .addFilterBefore(new JwtAuthenticationFilter(jwtService, usuarioRepository),

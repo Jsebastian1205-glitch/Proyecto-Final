@@ -2215,26 +2215,40 @@ WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE correo = 'equipo@buildzone.com');
 SET @autor = (SELECT id_usuario FROM usuario WHERE correo = 'equipo@buildzone.com' LIMIT 1);
 
 -- ---------------------------------------------------------------------
--- 7. Noticias: los 6 articulos del blog
+-- 7. Noticias: los 6 articulos del blog (con categoria y resumen).
+--    Las demas se publican desde el panel de administracion > Blog.
 -- ---------------------------------------------------------------------
-INSERT INTO noticia (id_usuario, titulo, contenido, fecha_publicacion)
-SELECT @autor, 'Cómo elegir el mejor procesador para tu PC en 2025', 'Antes de comprar un procesador define primero para qué lo vas a usar: gaming, edición de video o trabajo de oficina. Compara núcleos, hilos y velocidad, y no olvides revisar que sea compatible con tu placa madre antes de decidir.', '2025-02-10 10:00:00' FROM DUAL
+INSERT INTO noticia (id_usuario, titulo, categoria, resumen, contenido, fecha_publicacion)
+SELECT @autor, 'Cómo elegir el mejor procesador para tu PC en 2025', 'Guías', 'Antes de comprar un procesador define primero para qué lo vas a usar: gaming, edición de video o trabajo de oficina.', 'Antes de comprar un procesador define primero para qué lo vas a usar: gaming, edición de video o trabajo de oficina. Compara núcleos, hilos y velocidad, y no olvides revisar que sea compatible con tu placa madre antes de decidir.', '2025-02-10 10:00:00' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM noticia WHERE titulo = 'Cómo elegir el mejor procesador para tu PC en 2025');
-INSERT INTO noticia (id_usuario, titulo, contenido, fecha_publicacion)
-SELECT @autor, 'Guía para armar tu PC paso a paso sin errores', 'Arma tu PC en orden: primero el procesador y la RAM sobre la placa madre, luego móntala en el gabinete, conecta la fuente de poder y por último la tarjeta gráfica. Revisa cada conexión antes de encender el equipo por primera vez.', '2025-03-18 10:00:00' FROM DUAL
+INSERT INTO noticia (id_usuario, titulo, categoria, resumen, contenido, fecha_publicacion)
+SELECT @autor, 'Guía para armar tu PC paso a paso sin errores', 'Tutorial', 'Arma tu PC en orden: primero el procesador y la RAM sobre la placa madre, luego móntala en el gabinete, conecta la fuente de poder y por último la tarjeta gráfica.', 'Arma tu PC en orden: primero el procesador y la RAM sobre la placa madre, luego móntala en el gabinete, conecta la fuente de poder y por último la tarjeta gráfica. Revisa cada conexión antes de encender el equipo por primera vez.', '2025-03-18 10:00:00' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM noticia WHERE titulo = 'Guía para armar tu PC paso a paso sin errores');
-INSERT INTO noticia (id_usuario, titulo, contenido, fecha_publicacion)
-SELECT @autor, 'Nuevas GPUs lanzadas en 2025: análisis completo', 'Este año llegaron tarjetas gráficas con mejoras notables en eficiencia energética y trazado de rayos. Aquí en BuildZone puedes comparar las especificaciones y precios de los modelos más recientes en la sección de Comparador.', '2025-05-06 10:00:00' FROM DUAL
+INSERT INTO noticia (id_usuario, titulo, categoria, resumen, contenido, fecha_publicacion)
+SELECT @autor, 'Nuevas GPUs lanzadas en 2025: análisis completo', 'Novedades', 'Este año llegaron tarjetas gráficas con mejoras notables en eficiencia energética y trazado de rayos.', 'Este año llegaron tarjetas gráficas con mejoras notables en eficiencia energética y trazado de rayos. Aquí en BuildZone puedes comparar las especificaciones y precios de los modelos más recientes en la sección de Comparador.', '2025-05-06 10:00:00' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM noticia WHERE titulo = 'Nuevas GPUs lanzadas en 2025: análisis completo');
-INSERT INTO noticia (id_usuario, titulo, contenido, fecha_publicacion)
-SELECT @autor, 'RAM: ¿cuánta necesitas y qué velocidad elegir?', 'Para uso general 16GB son suficientes, pero si editas video o usas máquinas virtuales, considera 32GB o más. La velocidad en MHz también influye en el rendimiento, especialmente en procesadores AMD.', '2025-06-24 10:00:00' FROM DUAL
+INSERT INTO noticia (id_usuario, titulo, categoria, resumen, contenido, fecha_publicacion)
+SELECT @autor, 'RAM: ¿cuánta necesitas y qué velocidad elegir?', 'Guías', 'Para uso general 16GB son suficientes, pero si editas video o usas máquinas virtuales, considera 32GB o más.', 'Para uso general 16GB son suficientes, pero si editas video o usas máquinas virtuales, considera 32GB o más. La velocidad en MHz también influye en el rendimiento, especialmente en procesadores AMD.', '2025-06-24 10:00:00' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM noticia WHERE titulo = 'RAM: ¿cuánta necesitas y qué velocidad elegir?');
-INSERT INTO noticia (id_usuario, titulo, contenido, fecha_publicacion)
-SELECT @autor, 'Refrigeración líquida vs aire: cuál conviene más', 'La refrigeración por aire es más económica y fácil de mantener, mientras que la líquida ofrece mejores temperaturas en procesadores de alto rendimiento. La elección depende de tu presupuesto y de cuánto exijas a tu equipo.', '2025-08-12 10:00:00' FROM DUAL
+INSERT INTO noticia (id_usuario, titulo, categoria, resumen, contenido, fecha_publicacion)
+SELECT @autor, 'Refrigeración líquida vs aire: cuál conviene más', 'Tutorial', 'La refrigeración por aire es más económica y fácil de mantener, mientras que la líquida ofrece mejores temperaturas en procesadores de alto rendimiento.', 'La refrigeración por aire es más económica y fácil de mantener, mientras que la líquida ofrece mejores temperaturas en procesadores de alto rendimiento. La elección depende de tu presupuesto y de cuánto exijas a tu equipo.', '2025-08-12 10:00:00' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM noticia WHERE titulo = 'Refrigeración líquida vs aire: cuál conviene más');
-INSERT INTO noticia (id_usuario, titulo, contenido, fecha_publicacion)
-SELECT @autor, 'AMD vs Intel en 2025: ¿quién gana en relación precio-rendimiento?', 'AMD suele destacar en relación precio-rendimiento para gaming, mientras que Intel mantiene ventaja en tareas de un solo núcleo. Usa el Comparador de BuildZone para ver las estadísticas lado a lado antes de decidir.', '2025-10-01 10:00:00' FROM DUAL
+INSERT INTO noticia (id_usuario, titulo, categoria, resumen, contenido, fecha_publicacion)
+SELECT @autor, 'AMD vs Intel en 2025: ¿quién gana en relación precio-rendimiento?', 'Comparativas', 'AMD suele destacar en relación precio-rendimiento para gaming, mientras que Intel mantiene ventaja en tareas de un solo núcleo.', 'AMD suele destacar en relación precio-rendimiento para gaming, mientras que Intel mantiene ventaja en tareas de un solo núcleo. Usa el Comparador de BuildZone para ver las estadísticas lado a lado antes de decidir.', '2025-10-01 10:00:00' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM noticia WHERE titulo = 'AMD vs Intel en 2025: ¿quién gana en relación precio-rendimiento?');
+-- Completa categoria y resumen de las noticias que se cargaron antes sin ellos
+UPDATE noticia SET categoria = 'Guías' WHERE titulo = 'Cómo elegir el mejor procesador para tu PC en 2025' AND categoria IS NULL;
+UPDATE noticia SET resumen = 'Antes de comprar un procesador define primero para qué lo vas a usar: gaming, edición de video o trabajo de oficina.' WHERE titulo = 'Cómo elegir el mejor procesador para tu PC en 2025' AND resumen IS NULL;
+UPDATE noticia SET categoria = 'Tutorial' WHERE titulo = 'Guía para armar tu PC paso a paso sin errores' AND categoria IS NULL;
+UPDATE noticia SET resumen = 'Arma tu PC en orden: primero el procesador y la RAM sobre la placa madre, luego móntala en el gabinete, conecta la fuente de poder y por último la tarjeta gráfica.' WHERE titulo = 'Guía para armar tu PC paso a paso sin errores' AND resumen IS NULL;
+UPDATE noticia SET categoria = 'Novedades' WHERE titulo = 'Nuevas GPUs lanzadas en 2025: análisis completo' AND categoria IS NULL;
+UPDATE noticia SET resumen = 'Este año llegaron tarjetas gráficas con mejoras notables en eficiencia energética y trazado de rayos.' WHERE titulo = 'Nuevas GPUs lanzadas en 2025: análisis completo' AND resumen IS NULL;
+UPDATE noticia SET categoria = 'Guías' WHERE titulo = 'RAM: ¿cuánta necesitas y qué velocidad elegir?' AND categoria IS NULL;
+UPDATE noticia SET resumen = 'Para uso general 16GB son suficientes, pero si editas video o usas máquinas virtuales, considera 32GB o más.' WHERE titulo = 'RAM: ¿cuánta necesitas y qué velocidad elegir?' AND resumen IS NULL;
+UPDATE noticia SET categoria = 'Tutorial' WHERE titulo = 'Refrigeración líquida vs aire: cuál conviene más' AND categoria IS NULL;
+UPDATE noticia SET resumen = 'La refrigeración por aire es más económica y fácil de mantener, mientras que la líquida ofrece mejores temperaturas en procesadores de alto rendimiento.' WHERE titulo = 'Refrigeración líquida vs aire: cuál conviene más' AND resumen IS NULL;
+UPDATE noticia SET categoria = 'Comparativas' WHERE titulo = 'AMD vs Intel en 2025: ¿quién gana en relación precio-rendimiento?' AND categoria IS NULL;
+UPDATE noticia SET resumen = 'AMD suele destacar en relación precio-rendimiento para gaming, mientras que Intel mantiene ventaja en tareas de un solo núcleo.' WHERE titulo = 'AMD vs Intel en 2025: ¿quién gana en relación precio-rendimiento?' AND resumen IS NULL;
 
 -- ---------------------------------------------------------------------
 -- 8. Comparaciones de ejemplo (duelos de 2 productos)
