@@ -1,9 +1,10 @@
 /**
  * Módulo del blog.
  *
- * - Sección "Últimas noticias" del inicio: muestra las noticias de la API
- *   (GET /api/noticias), la más reciente primero. Si el backend no responde
- *   usa los artículos locales de script.js (ARTICLES), igual que el catálogo.
+ * - Página "Blog": muestra las noticias de la API (GET /api/noticias), la
+ *   más reciente primero, con filtros por categoría. Si el backend no
+ *   responde usa los artículos locales de script.js (ARTICLES), igual que
+ *   el catálogo.
  * - Modal de lectura: título, categoría, fecha, autor y el contenido en
  *   párrafos (una línea en blanco separa un párrafo del siguiente).
  * - Pestaña "Blog" del panel de administración: crear, editar y eliminar
@@ -14,9 +15,6 @@
  * CATEGORY_ICONS, lineIconSvg, tintClass, toggleArticle). Se inicializa
  * desde script.js.
  */
-
-/** Cuántas noticias se ven en el inicio antes de "Ver más noticias". */
-const NOTICIAS_VISIBLES_INICIO = 6;
 
 /** Categorías del blog: las que ofrece el formulario del admin. */
 const CATEGORIAS_BLOG = {
@@ -45,7 +43,8 @@ const COMPONENTES_EN_TITULO = [
 
 let noticiasCache = [];
 let noticiasAdminCache = [];
-let mostrarTodasLasNoticias = false;
+/** Categoría elegida en los filtros de la página Blog ('todas' = sin filtro). */
+let categoriaBlogActiva = 'todas';
 
 /** Los artículos locales de script.js con el mismo formato que la API. */
 function noticiasLocales() {
@@ -82,20 +81,50 @@ function formatearFechaNoticia(fecha) {
   return valor.toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// ── Sección "Últimas noticias" del inicio ──
+// ── Página "Blog" ──
+
+/** Botones de filtro: "Todas" y una por cada categoría que tenga noticias. */
+function renderizarFiltrosBlog() {
+  const contenedor = document.getElementById('blog-filtros');
+  if (!contenedor) return;
+
+  const conteo = new Map();
+  noticiasCache.forEach((n) => {
+    const categoria = n.categoria || 'Noticias';
+    conteo.set(categoria, (conteo.get(categoria) || 0) + 1);
+  });
+  if (categoriaBlogActiva !== 'todas' && !conteo.has(categoriaBlogActiva)) {
+    categoriaBlogActiva = 'todas';
+  }
+  // Primero las categorías del formulario (en su orden) y luego cualquier otra
+  const orden = [...Object.keys(CATEGORIAS_BLOG), ...conteo.keys()]
+    .filter((c, i, lista) => conteo.has(c) && lista.indexOf(c) === i);
+
+  const boton = (valor, texto, tint, cantidad) => {
+    const activa = valor === categoriaBlogActiva;
+    return `<button class="product-filter ${tint}${activa ? ' active' : ''}" type="button"
+      data-blog-categoria="${escaparHtml(valor)}" aria-pressed="${activa}">${escaparHtml(texto)} <span class="blog-filtro-n">${cantidad}</span></button>`;
+  };
+  contenedor.hidden = noticiasCache.length === 0;
+  contenedor.innerHTML = [
+    boton('todas', 'Todas', 'cat-tint-all', noticiasCache.length),
+    ...orden.map((c) => boton(c, c, (CATEGORIAS_BLOG[c] || CATEGORIA_BLOG_POR_DEFECTO).tint, conteo.get(c))),
+  ].join('');
+}
 
 function renderizarNoticias() {
   const grid = document.getElementById('news-grid');
-  const boton = document.getElementById('btn-mas-noticias');
   if (!grid) return;
+  renderizarFiltrosBlog();
 
   if (noticiasCache.length === 0) {
     grid.innerHTML = '<p class="news-vacio">Todavía no hay noticias publicadas.</p>';
-    if (boton) boton.hidden = true;
     return;
   }
 
-  const visibles = mostrarTodasLasNoticias ? noticiasCache : noticiasCache.slice(0, NOTICIAS_VISIBLES_INICIO);
+  const visibles = categoriaBlogActiva === 'todas'
+    ? noticiasCache
+    : noticiasCache.filter((n) => (n.categoria || 'Noticias') === categoriaBlogActiva);
   grid.innerHTML = visibles
     .map((n) => {
       const { tint, svg } = iconoTarjetaNoticia(n);
@@ -112,11 +141,6 @@ function renderizarNoticias() {
         </div>`;
     })
     .join('');
-
-  if (boton) {
-    boton.hidden = noticiasCache.length <= NOTICIAS_VISIBLES_INICIO;
-    boton.textContent = mostrarTodasLasNoticias ? 'Ver menos' : `Ver todas las noticias (${noticiasCache.length})`;
-  }
 }
 
 /** Trae las noticias de la API; si no responde, deja las locales. */
@@ -309,10 +333,12 @@ function inicializarBlog() {
     grid.addEventListener('keydown', manejarTeclaNoticias);
   }
 
-  const botonMas = document.getElementById('btn-mas-noticias');
-  if (botonMas) {
-    botonMas.addEventListener('click', () => {
-      mostrarTodasLasNoticias = !mostrarTodasLasNoticias;
+  const filtros = document.getElementById('blog-filtros');
+  if (filtros) {
+    filtros.addEventListener('click', (event) => {
+      const boton = event.target.closest('[data-blog-categoria]');
+      if (!boton) return;
+      categoriaBlogActiva = boton.dataset.blogCategoria;
       renderizarNoticias();
     });
   }

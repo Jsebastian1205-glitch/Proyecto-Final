@@ -336,8 +336,6 @@ nav {
 .news-link { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
 .news-fecha { color: var(--gray3); font-weight: 500; font-size: 0.78rem; }
 .news-vacio { color: var(--gray2); grid-column: 1 / -1; text-align: center; }
-.news-mas { text-align: center; margin-top: 2rem; }
-.news-mas .btn[hidden] { display: none; }
 
 /* Pie de página y enlaces secundarios */
 footer {
@@ -1368,3 +1366,8 @@ footer {
   -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
   border-top-color: var(--glass-borde);
 }
+
+/* Página Blog: filtros por categoría encima de las tarjetas */
+#blog-filtros { margin: 1.5rem 0 2rem; }
+#blog-filtros[hidden] { display: none; }
+.blog-filtro-n { opacity: .6; font-size: .8em; margin-left: .15rem; }

@@ -23,7 +23,7 @@
     <button class="nav-link active" id="nav-inicio" onclick="showPage('inicio')">Inicio</button>
     <button class="nav-link" id="nav-productos" onclick="showPage('productos')">Productos</button>
     <button class="nav-link" id="nav-comparador" onclick="showPage('comparador')">Comparador</button>
-    <button class="nav-link" id="nav-blog" onclick="showPage('inicio'); document.getElementById('blog-section')?.scrollIntoView({behavior:'smooth'})">Blog</button>
+    <button class="nav-link" id="nav-blog" onclick="showPage('blog')">Blog</button>
     <button class="nav-link" id="nav-planes" onclick="showPage('planes'); window.cargarPlanes?.()">Planes</button>
     <button class="nav-link" id="nav-contacto" onclick="showPage('contacto')">Contacto</button>
     <button class="nav-link" id="nav-admin" onclick="showPage('admin'); window.cargarAdmin?.()" style="display:none">Admin</button>
@@ -131,15 +131,6 @@
     <div class="featured-grid" id="home-featured"></div>
   </section>
 
-  <!-- Sección de noticias y contenido reciente -->
-  <section class="section" id="blog-section">
-    <div class="section-label">Blog</div>
-    <h2 class="section-title">Últimas noticias</h2>
-    <!-- Las tarjetas las dibuja js/blog.js con las noticias de la API
-         (GET /api/noticias); el administrador las publica desde Panel > Blog. -->
-    <div class="news-grid" id="news-grid" style="margin-top:2rem"></div>
-    <div class="news-mas"><button class="btn btn-outline" id="btn-mas-noticias" type="button" hidden>Ver todas las noticias</button></div>
-  </section>
 
   <!-- Pie de página con enlaces secundarios -->
   <footer>
@@ -169,7 +160,7 @@
           <div class="footer-links">
             <div class="footer-link" onclick="showPage('productos')">Productos</div>
             <div class="footer-link" onclick="showPage('comparador')">Comparador</div>
-            <div class="footer-link" onclick="showPage('inicio'); document.getElementById('blog-section')?.scrollIntoView({behavior:'smooth'})">Blog</div>
+            <div class="footer-link" onclick="showPage('blog')">Blog</div>
             <div class="footer-link" onclick="showPage('planes'); window.cargarPlanes?.()">Planes</div>
             <div class="footer-link" onclick="showPage('contacto')">Contacto</div>
           </div>
@@ -289,6 +280,24 @@
       <div class="duel-arena" id="duel-arena">
         <div class="duel-empty">Selecciona 2 productos para comenzar el duelo ⚔️</div>
       </div>
+    </div>
+  </section>
+</div>
+
+<!-- Página del blog: las tarjetas y los filtros los dibuja js/blog.js con
+     las noticias de la API (GET /api/noticias); el administrador las publica
+     desde Panel > Blog. -->
+<div class="page" id="page-blog">
+  <section class="section section-glow">
+    <div class="section-glow-bg"></div>
+    <div class="section-glow-grid"></div>
+    <div class="section-glow-content">
+      <div class="section-label">Blog</div>
+      <h2 class="section-title">Últimas noticias</h2>
+      <p class="section-sub">Guías, tutoriales y novedades para armar y mejorar tu PC.</p>
+
+      <div class="product-filters" id="blog-filtros"></div>
+      <div class="news-grid" id="news-grid"></div>
     </div>
   </section>
 </div>
