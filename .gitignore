@@ -1,4 +1,5 @@
-# Backend Java (Maven/NetBeans)
+# Build de Maven (aplicacion principal y modulo de consola)
+target/
 backend-java/target/
 *.class
 *.log
@@ -9,12 +10,6 @@ nbproject/private/
 .idea/
 *.iml
 
-# Node (por si el front-end usa dependencias)
-node_modules
-
 # Sistema
 Thumbs.db
 .DS_Store
-
-# Backend API (Spring Boot)
-backend-api/target/

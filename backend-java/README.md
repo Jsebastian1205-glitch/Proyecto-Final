@@ -7,16 +7,16 @@ entidades Producto, Marca y Categoria, siguiendo el diagrama de clases y las
 historias de usuario definidas en las etapas anteriores del ciclo de vida
 del software.
 
-Este es el unico backend de trabajo del proyecto: vive dentro de
-`C:\Proyecto Sena 1\backend-java` junto con el front-end (en la raiz de
-`Proyecto Sena 1`) y las pruebas E2E (`Proyecto Sena 1\validacion`).
+Es la etapa anterior del proyecto y se conserva como modulo independiente
+(menu de consola). La aplicacion web principal (front-end + API Spring Boot)
+esta en la raiz de `Proyecto Sena 1`; ambas usan las mismas tablas
+`producto`, `marca` y `categoria` de la base `buildzone`.
 
 ## Estructura del proyecto
 
 ```
 Proyecto Sena 1/
-├── Index.html, Style.css, *.js          Front-end
-├── validacion/                          Pruebas E2E (Playwright)
+├── pom.xml, src/                        Aplicacion web (front-end + API Spring Boot)
 └── backend-java/                        Este modulo
     ├── pom.xml
     ├── src/main/resources/schema.sql    Referencia de tablas (no ejecutar)
