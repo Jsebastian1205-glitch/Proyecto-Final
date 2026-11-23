@@ -306,3 +306,18 @@ function cambiarEstadoMensajeContacto(id, estado) {
 function eliminarMensajeContacto(id) {
   return peticionApi(`/contacto/${id}`, { method: 'DELETE' });
 }
+
+// ── Mis comparaciones (/api/comparaciones) ──
+// Exige sesión y un plan de pago activo (o rol ADMIN); si no, el backend responde 403.
+
+function listarMisComparaciones() {
+  return peticionApi('/comparaciones/mias');
+}
+
+function guardarComparacion(idProductoA, idProductoB) {
+  return peticionApi('/comparaciones', { method: 'POST', body: { idProductoA, idProductoB } });
+}
+
+function eliminarComparacion(id) {
+  return peticionApi(`/comparaciones/${id}`, { method: 'DELETE' });
+}

@@ -32,12 +32,14 @@ import com.buildzone.api.dto.ProductoResponse;
 import com.buildzone.api.exception.RecursoNoEncontradoException;
 import com.buildzone.api.exception.ReglaNegocioException;
 import com.buildzone.api.model.Categoria;
+import com.buildzone.api.model.Comparacion;
 import com.buildzone.api.model.Especificacion;
 import com.buildzone.api.model.FuentePrecio;
 import com.buildzone.api.model.Marca;
 import com.buildzone.api.model.Precio;
 import com.buildzone.api.model.Producto;
 import com.buildzone.api.repository.CategoriaRepository;
+import com.buildzone.api.repository.ComparacionRepository;
 import com.buildzone.api.repository.EspecificacionRepository;
 import com.buildzone.api.repository.FuentePrecioRepository;
 import com.buildzone.api.repository.MarcaRepository;
@@ -65,6 +67,8 @@ class ProductoServiceImplTest {
     private PrecioRepository precioRepository;
     @Mock
     private FuentePrecioRepository fuentePrecioRepository;
+    @Mock
+    private ComparacionRepository comparacionRepository;
 
     private ProductoServiceImpl productoService;
 
@@ -74,7 +78,7 @@ class ProductoServiceImplTest {
     @BeforeEach
     void preparar() {
         productoService = new ProductoServiceImpl(productoRepository, marcaRepository, categoriaRepository,
-                especificacionRepository, precioRepository, fuentePrecioRepository, RELOJ);
+                especificacionRepository, precioRepository, fuentePrecioRepository, comparacionRepository, RELOJ);
         amd = new Marca("AMD", null);
         amd.setIdMarca(2);
         procesador = new Categoria("Procesador", null);
@@ -249,7 +253,7 @@ class ProductoServiceImplTest {
     }
 
     @Test
-    @DisplayName("Eliminar: borra la ficha y los precios antes que el producto")
+    @DisplayName("Eliminar: borra la ficha, los precios y las comparaciones antes que el producto")
     void eliminarBorraFichaYPrecios() {
         Producto p = producto(30);
         List<Especificacion> ficha = List.of(new Especificacion(p, "Socket", "AM5", null));
@@ -257,11 +261,14 @@ class ProductoServiceImplTest {
         when(productoRepository.findById(30)).thenReturn(Optional.of(p));
         when(especificacionRepository.findByProductoIdProductoOrderByIdEspecificacionAsc(30)).thenReturn(ficha);
         when(precioRepository.findByProductoIdProductoOrderByValorAsc(30)).thenReturn(precios);
+        List<Comparacion> comparaciones = List.of(new Comparacion());
+        when(comparacionRepository.findDistinctByDetallesProductoIdProducto(30)).thenReturn(comparaciones);
 
         productoService.eliminar(30);
 
         verify(especificacionRepository).deleteAll(ficha);
         verify(precioRepository).deleteAll(precios);
+        verify(comparacionRepository).deleteAll(comparaciones);
         verify(productoRepository).delete(p);
     }
 }

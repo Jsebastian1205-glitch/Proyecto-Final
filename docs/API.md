@@ -91,6 +91,7 @@ src/main/java/com/buildzone/api/
 | `GET /api/noticias/mias` | ❌ 401 | ✅ | ✅ |
 | `POST /api/noticias` | ❌ 401 | ✅ (con plan de pago activo, mensual o anual; Gratuito o sin plan 403) | ✅ |
 | `PUT/DELETE /api/noticias/{id}` | ❌ 401 | ✅ (solo las propias) | ✅ |
+| `GET /api/comparaciones/mias`, `POST /api/comparaciones`, `DELETE /api/comparaciones/{id}` | ❌ 401 | ✅ (con plan de pago activo, mensual o anual; Gratuito o sin plan 403; borrar solo las propias) | ✅ |
 | `POST /api/contacto` | ✅ | ✅ | ✅ |
 | `GET /api/contacto`, `PATCH /api/contacto/{id}/estado`, `DELETE /api/contacto/{id}` | ❌ 401 | ❌ 403 | ✅ |
 | `GET /api/planes` | ✅ | ✅ | ✅ |
@@ -183,6 +184,20 @@ el inicio del contenido). La lista viene de la más reciente a la más antigua y
 incluye `fechaPublicacion` y `autor` (quien la publicó).
 Pueden publicar el ADMIN y los usuarios con una suscripción activa a un plan de pago (mensual o anual); cada usuario edita
 y elimina solo sus publicaciones (`GET /api/noticias/mias` las lista) y el ADMIN, todas.
+
+### Mis comparaciones — `/api/comparaciones`
+
+Duelos del Comparador guardados por el usuario (tablas `comparacion` y `detalle_comparacion`
+del modelo original). Exclusivo de los planes de pago (mensual o anual) y del ADMIN.
+
+- `GET /api/comparaciones/mias`: las comparaciones propias, la más reciente primero. Cada una trae
+  `idComparacion`, `titulo`, `fechaCreacion` y `productos` (`idProducto`, `nombre`, `marca`, `categoria`).
+  El ganador no se guarda: el front-end lo calcula con los puntajes actuales.
+- `POST /api/comparaciones`: `{"idProductoA","idProductoB"}`. Los dos deben existir, ser distintos y de
+  la misma categoría. Si ese duelo ya estaba guardado (en cualquier orden) solo se actualiza la fecha.
+- `DELETE /api/comparaciones/{id}`: solo las propias.
+
+Al eliminar un producto (`DELETE /api/productos/{id}`) se borran también las comparaciones que lo incluían.
 
 ### Contacto — `/api/contacto`
 

@@ -1,6 +1,7 @@
 /**
  * Página "Mi cuenta": edición de perfil, cambio de contraseña e historial /
- * cancelación de la suscripción propia. Depende de ui.js, api.js y de
+ * cancelación de la suscripción propia. La pestaña "Mis comparaciones"
+ * vive en comparaciones.js. Depende de ui.js, api.js y de
  * auth.js (para conocer/actualizar al usuario autenticado).
  */
 
@@ -97,6 +98,8 @@ function renderizarHistorialSuscripciones(historial) {
 
 async function cargarCuenta() {
   cargarFormularioPerfil();
+  // Pestaña "Mis comparaciones" (js/comparaciones.js)
+  if (typeof window.cargarMisComparaciones === 'function') window.cargarMisComparaciones();
 
   const actualEl = document.getElementById('suscripcion-actual');
   const historialEl = document.getElementById('suscripcion-historial');

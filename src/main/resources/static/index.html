@@ -280,6 +280,16 @@
       <div class="duel-arena" id="duel-arena">
         <div class="duel-empty">Selecciona 2 productos para comenzar el duelo ⚔️</div>
       </div>
+
+      <!-- Guardar el duelo en "Mis comparaciones" (js/comparaciones.js).
+           Exclusivo de los planes de pago, mensual o anual. -->
+      <div class="duel-guardar" id="duel-guardar" hidden>
+        <button class="btn btn-outline" type="button" id="duel-guardar-btn">Guardar comparación</button>
+        <div class="blog-aviso-plan" id="duel-aviso-plan" hidden>
+          <span>Guardar comparaciones es exclusivo de los planes Premium, mensual o anual.</span>
+          <button class="btn btn-outline" type="button" onclick="showPage('planes')">Ver planes</button>
+        </div>
+      </div>
     </div>
   </section>
 </div>
@@ -347,6 +357,7 @@
         <button class="account-tab active" data-tab="perfil">Perfil</button>
         <button class="account-tab" data-tab="seguridad">Seguridad</button>
         <button class="account-tab" data-tab="suscripcion">Mi suscripción</button>
+        <button class="account-tab" data-tab="comparaciones">Mis comparaciones</button>
       </div>
 
       <div class="account-panel active" id="account-panel-perfil">
@@ -391,6 +402,12 @@
         </div>
         <h3 class="subsection-title">Historial de suscripciones</h3>
         <div id="suscripcion-historial" class="subscription-history"></div>
+      </div>
+
+      <div class="account-panel" id="account-panel-comparaciones">
+        <div class="comparaciones-lista" id="comparaciones-lista">
+          <div class="plans-empty">Cargando tus comparaciones…</div>
+        </div>
       </div>
     </div>
   </section>
@@ -783,6 +800,7 @@
 <script src="js/catalogo.js"></script>
 <script src="js/blog.js"></script>
 <script src="js/contacto.js"></script>
+<script src="js/comparaciones.js"></script>
 <script src="js/script.js"></script>
 </body>
 </html>

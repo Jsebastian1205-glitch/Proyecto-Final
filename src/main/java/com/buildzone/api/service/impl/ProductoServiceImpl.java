@@ -25,6 +25,7 @@ import com.buildzone.api.model.Marca;
 import com.buildzone.api.model.Precio;
 import com.buildzone.api.model.Producto;
 import com.buildzone.api.repository.CategoriaRepository;
+import com.buildzone.api.repository.ComparacionRepository;
 import com.buildzone.api.repository.EspecificacionRepository;
 import com.buildzone.api.repository.FuentePrecioRepository;
 import com.buildzone.api.repository.MarcaRepository;
@@ -66,6 +67,7 @@ public class ProductoServiceImpl implements ProductoService {
     private final EspecificacionRepository especificacionRepository;
     private final PrecioRepository precioRepository;
     private final FuentePrecioRepository fuentePrecioRepository;
+    private final ComparacionRepository comparacionRepository;
     private final Clock clock;
 
     public ProductoServiceImpl(ProductoRepository productoRepository,
@@ -74,6 +76,7 @@ public class ProductoServiceImpl implements ProductoService {
                                 EspecificacionRepository especificacionRepository,
                                 PrecioRepository precioRepository,
                                 FuentePrecioRepository fuentePrecioRepository,
+                                ComparacionRepository comparacionRepository,
                                 Clock clock) {
         this.productoRepository = productoRepository;
         this.marcaRepository = marcaRepository;
@@ -81,6 +84,7 @@ public class ProductoServiceImpl implements ProductoService {
         this.especificacionRepository = especificacionRepository;
         this.precioRepository = precioRepository;
         this.fuentePrecioRepository = fuentePrecioRepository;
+        this.comparacionRepository = comparacionRepository;
         this.clock = clock;
     }
 
@@ -157,6 +161,9 @@ public class ProductoServiceImpl implements ProductoService {
         especificacionRepository.deleteAll(
                 especificacionRepository.findByProductoIdProductoOrderByIdEspecificacionAsc(id));
         precioRepository.deleteAll(precioRepository.findByProductoIdProductoOrderByValorAsc(id));
+        // Una comparacion sin uno de sus dos productos ya no tiene sentido:
+        // se borran las comparaciones guardadas que lo incluian.
+        comparacionRepository.deleteAll(comparacionRepository.findDistinctByDetallesProductoIdProducto(id));
         productoRepository.delete(producto);
     }
 

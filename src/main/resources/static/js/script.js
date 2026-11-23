@@ -878,6 +878,12 @@ function renderDuel() {
   updateDuelPicker('a', productA);
   updateDuelPicker('b', productB);
 
+  // Botón "Guardar comparación" (js/comparaciones.js): solo con un duelo válido
+  const hayDuelo = productA && productB && productA.id !== productB.id;
+  if (typeof window.actualizarGuardarDuelo === 'function') {
+    window.actualizarGuardarDuelo(hayDuelo ? productA : null, hayDuelo ? productB : null);
+  }
+
   if (!productA || !productB) {
     arena.innerHTML = DUEL_EMPTY_HTML;
     return;
@@ -890,6 +896,28 @@ function renderDuel() {
 
   arena.innerHTML = buildDuelResult(productA, productB);
 }
+
+/**
+ * Abre el Comparador con un duelo guardado ("Mis comparaciones"). Los ids son
+ * los de la base de datos (idProducto). Devuelve false si alguno de los
+ * productos ya no está en el catálogo cargado o no tiene puntajes.
+ */
+function cargarDueloGuardado(idProductoA, idProductoB) {
+  const productA = PRODUCTS.find((p) => p.idProducto === idProductoA && p.stats);
+  const productB = PRODUCTS.find((p) => p.idProducto === idProductoB && p.stats);
+  if (!productA || !productB || productA.category !== productB.category) return false;
+
+  showPage('comparador');
+  setDuelCategory(productA.category);
+  const selectA = document.getElementById('duel-select-a');
+  const selectB = document.getElementById('duel-select-b');
+  if (!selectA || !selectB) return false;
+  selectA.value = productA.id;
+  selectB.value = productB.id;
+  renderDuel();
+  return true;
+}
+window.cargarDueloGuardado = cargarDueloGuardado;
 
 // ── Página de Productos (filtros, búsqueda y vitrina por categoría) ──
 
@@ -1450,6 +1478,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof window.inicializarAdmin === 'function') window.inicializarAdmin();
   if (typeof window.inicializarCatalogo === 'function') window.inicializarCatalogo();
   if (typeof window.inicializarContacto === 'function') window.inicializarContacto();
+  if (typeof window.inicializarComparaciones === 'function') window.inicializarComparaciones();
   if (typeof window.inicializarBlog === 'function') window.inicializarBlog();
 
   showPage('inicio');
