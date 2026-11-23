@@ -28,10 +28,20 @@ CREATE TABLE IF NOT EXISTS usuario_cuenta (
     rol             VARCHAR(20)  NOT NULL DEFAULT 'USUARIO' COMMENT 'USUARIO | ADMIN',
     estado          VARCHAR(20)  NOT NULL DEFAULT 'ACTIVO'  COMMENT 'ACTIVO | INACTIVO',
     fecha_registro  DATETIME(6)  NOT NULL,
+    debe_cambiar_password BIT(1) NOT NULL DEFAULT b'0' COMMENT 'Entro con contrasena temporal: debe crear una nueva',
     PRIMARY KEY (id_usuario),
     CONSTRAINT uk_usuario_cuenta_username UNIQUE (username),
     CONSTRAINT uk_usuario_cuenta_email UNIQUE (email)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Recuperar contrasena: columna debe_cambiar_password, para las bases donde
+-- usuario_cuenta ya existia sin ella. Se agrega solo si falta.
+SET @falta = (SELECT COUNT(*) = 0 FROM information_schema.COLUMNS
+              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'usuario_cuenta' AND COLUMN_NAME = 'debe_cambiar_password');
+SET @sql = IF(@falta, 'ALTER TABLE usuario_cuenta ADD COLUMN debe_cambiar_password BIT(1) NOT NULL DEFAULT b''0''', 'DO 0');
+PREPARE paso FROM @sql;
+EXECUTE paso;
+DEALLOCATE PREPARE paso;
 
 CREATE TABLE IF NOT EXISTS plan_suscripcion (
     id_plan        BIGINT        NOT NULL AUTO_INCREMENT,

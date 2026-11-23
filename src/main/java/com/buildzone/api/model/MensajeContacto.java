@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import com.buildzone.api.model.enums.EstadoMensaje;
 import com.buildzone.api.model.enums.MotivoContacto;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -49,6 +51,11 @@ public class MensajeContacto {
 
     @Column(name = "fecha_envio", nullable = false)
     private LocalDateTime fechaEnvio;
+
+    /** true si es una solicitud de "Olvide mi contrasena" (la crea el inicio de sesion). */
+    @ColumnDefault("false")
+    @Column(name = "recuperacion", nullable = false)
+    private boolean recuperacion;
 
     /** Cuenta que envio el mensaje, o null si fue un visitante sin sesion. */
     @Column(name = "id_usuario")
@@ -108,6 +115,14 @@ public class MensajeContacto {
 
     public void setFechaEnvio(LocalDateTime fechaEnvio) {
         this.fechaEnvio = fechaEnvio;
+    }
+
+    public boolean isRecuperacion() {
+        return recuperacion;
+    }
+
+    public void setRecuperacion(boolean recuperacion) {
+        this.recuperacion = recuperacion;
     }
 
     public Long getIdUsuario() {

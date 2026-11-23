@@ -3,9 +3,13 @@ package com.buildzone.api.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/** Cambio de contrasena propia (PUT /api/usuarios/me/password). */
+/**
+ * Cambio de contrasena propia (PUT /api/usuarios/me/password).
+ * La contrasena actual es obligatoria, salvo cuando el usuario entro con una
+ * contrasena temporal (debe crear una nueva y ya demostro conocer la temporal
+ * al iniciar sesion). Esa regla la aplica UsuarioServiceImpl.
+ */
 public record CambioPasswordRequest(
-        @NotBlank(message = "La contrasena actual es obligatoria.")
         String passwordActual,
 
         @NotBlank(message = "La contrasena nueva es obligatoria.")

@@ -157,7 +157,17 @@ CREATE TABLE IF NOT EXISTS mensaje_contacto (
     estado       VARCHAR(20)   NOT NULL DEFAULT 'NUEVO' COMMENT 'NUEVO | LEIDO | RESPONDIDO',
     fecha_envio  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id_usuario   BIGINT        DEFAULT NULL,
+    recuperacion BIT(1)        NOT NULL DEFAULT b'0' COMMENT 'Solicitud de Olvide mi contrasena',
     PRIMARY KEY (id_mensaje),
     KEY idx_mensaje_contacto_correo_fecha (correo, fecha_envio),
     KEY idx_mensaje_contacto_estado (estado)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Recuperar contrasena: columna "recuperacion" de mensaje_contacto, para
+-- las bases donde la tabla ya existia sin ella (mismo metodo que en noticia).
+SET @falta = (SELECT COUNT(*) = 0 FROM information_schema.COLUMNS
+              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'mensaje_contacto' AND COLUMN_NAME = 'recuperacion');
+SET @sql = IF(@falta, 'ALTER TABLE mensaje_contacto ADD COLUMN recuperacion BIT(1) NOT NULL DEFAULT b''0''', 'DO 0');
+PREPARE paso FROM @sql;
+EXECUTE paso;
+DEALLOCATE PREPARE paso;

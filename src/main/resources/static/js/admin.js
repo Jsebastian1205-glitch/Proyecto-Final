@@ -35,8 +35,11 @@ function renderizarUsuarios(usuarios) {
     return;
   }
 
+  // El admin no restablece su propia contraseña aquí (lo hace en Mi cuenta)
+  const yo = typeof obtenerUsuarioGuardado === 'function' ? obtenerUsuarioGuardado() : null;
   tbody.innerHTML = usuarios
     .map((u) => {
+      const esYo = yo && yo.id === u.id;
       const nuevoRol = u.rol === 'ADMIN' ? 'USUARIO' : 'ADMIN';
       const nuevoEstado = u.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
       return `
@@ -44,10 +47,11 @@ function renderizarUsuarios(usuarios) {
           <td>${escaparHtml(u.username)}<br><span class="table-subtext">${escaparHtml(u.nombre)} ${escaparHtml(u.apellido)}</span></td>
           <td>${escaparHtml(u.email)}</td>
           <td><span class="badge ${u.rol === 'ADMIN' ? 'badge-purple' : 'badge-gris'}">${u.rol}</span></td>
-          <td><span class="badge ${ETIQUETAS_ESTADO_USUARIO[u.estado] || 'badge-gris'}">${u.estado}</span></td>
+          <td><span class="badge ${ETIQUETAS_ESTADO_USUARIO[u.estado] || 'badge-gris'}">${u.estado}</span>${u.debeCambiarPassword ? '<br><span class="badge badge-ambar" style="margin-top:.3rem" title="Tiene una contraseña temporal sin usar">Clave temporal</span>' : ''}</td>
           <td class="admin-table-actions">
             <button class="btn-mini" data-rol-usuario-id="${u.id}" data-nuevo-rol="${nuevoRol}">Hacer ${nuevoRol}</button>
             <button class="btn-mini ${u.estado === 'ACTIVO' ? 'btn-mini-danger' : ''}" data-estado-usuario-id="${u.id}" data-nuevo-estado="${nuevoEstado}">${u.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}</button>
+            ${esYo ? '' : `<button class="btn-mini" data-restablecer-usuario-id="${u.id}">Restablecer contraseña</button>`}
           </td>
         </tr>`;
     })
@@ -57,6 +61,11 @@ function renderizarUsuarios(usuarios) {
 async function manejarClicUsuarios(event) {
   const botonRol = event.target.closest('[data-rol-usuario-id]');
   const botonEstado = event.target.closest('[data-estado-usuario-id]');
+  const botonRestablecer = event.target.closest('[data-restablecer-usuario-id]');
+  if (botonRestablecer) {
+    await restablecerPassword(Number(botonRestablecer.dataset.restablecerUsuarioId), botonRestablecer);
+    return;
+  }
 
   try {
     if (botonRol) {
@@ -72,6 +81,65 @@ async function manejarClicUsuarios(event) {
     }
   } catch (error) {
     mostrarError(error.message);
+  }
+}
+
+// ── Restablecer contraseña (contraseña temporal) ──
+
+async function restablecerPassword(id, boton) {
+  const u = usuariosCache.find((x) => x.id === id);
+  const nombre = u ? u.username : `#${id}`;
+  if (!confirm(`¿Generar una contraseña temporal para ${nombre}? Su contraseña actual dejará de funcionar.`)) return;
+  boton.disabled = true;
+  try {
+    const r = await restablecerPasswordUsuario(id);
+    abrirModalTemporal(r);
+    await cargarUsuarios();
+  } catch (error) {
+    boton.disabled = false;
+    mostrarError(error.message);
+  }
+}
+
+function abrirModalTemporal(r) {
+  document.getElementById('temporal-para').innerHTML =
+    `Para <b style="color:#fff">${escaparHtml(r.username)}</b> · ${escaparHtml(r.email)}`;
+  document.getElementById('temporal-valor').textContent = r.passwordTemporal;
+  const asunto = 'BuildZone: tu contraseña temporal';
+  const cuerpo = `Hola ${r.username},\n\nRecibimos tu solicitud para recuperar el acceso a BuildZone.\n\n`
+    + `Tu contraseña temporal es: ${r.passwordTemporal}\n\n`
+    + 'Inicia sesión con tu correo y esta contraseña. Al entrar te pediremos crear una contraseña nueva.\n\n'
+    + 'Si no fuiste tú quien lo pidió, responde a este correo.\n\nEquipo BuildZone';
+  document.getElementById('temporal-correo').href =
+    `mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+  const copiar = document.getElementById('temporal-copiar');
+  copiar.textContent = 'Copiar';
+  document.getElementById('temporal-modal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalTemporal() {
+  document.getElementById('temporal-modal').classList.remove('active');
+  document.body.style.overflow = '';
+  // La contraseña no se deja en la página después de cerrar
+  document.getElementById('temporal-valor').textContent = '';
+  document.getElementById('temporal-correo').href = '#';
+}
+
+async function copiarTemporal() {
+  const valor = document.getElementById('temporal-valor').textContent;
+  const boton = document.getElementById('temporal-copiar');
+  try {
+    await navigator.clipboard.writeText(valor);
+    boton.textContent = '✓ Copiada';
+  } catch {
+    // Sin permiso de portapapeles: se selecciona el texto para copiarlo a mano
+    const rango = document.createRange();
+    rango.selectNodeContents(document.getElementById('temporal-valor'));
+    const seleccion = window.getSelection();
+    seleccion.removeAllRanges();
+    seleccion.addRange(rango);
+    boton.textContent = 'Ctrl + C';
   }
 }
 
@@ -279,6 +347,15 @@ function inicializarAdmin() {
 
   const planForm = document.getElementById('plan-form');
   if (planForm) planForm.addEventListener('submit', manejarEnvioPlan);
+
+  const temporalModal = document.getElementById('temporal-modal');
+  if (temporalModal) {
+    temporalModal.addEventListener('click', (event) => {
+      if (event.target === temporalModal || event.target.closest('[data-close-temporal-modal]')) cerrarModalTemporal();
+    });
+  }
+  const copiar = document.getElementById('temporal-copiar');
+  if (copiar) copiar.addEventListener('click', copiarTemporal);
 
   const planModal = document.getElementById('plan-modal');
   if (planModal) {

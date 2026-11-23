@@ -32,6 +32,8 @@ import com.buildzone.api.model.enums.EstadoMensaje;
 import com.buildzone.api.model.enums.MotivoContacto;
 import com.buildzone.api.model.enums.Rol;
 import com.buildzone.api.repository.MensajeContactoRepository;
+import com.buildzone.api.repository.UsuarioRepository;
+import com.buildzone.api.Fixtures;
 import com.buildzone.api.security.UsuarioAutenticado;
 
 /** Pruebas unitarias del formulario de contacto: guardado, antispam y estados. */
@@ -43,12 +45,14 @@ class ContactoServiceImplTest {
 
     @Mock
     private MensajeContactoRepository repository;
+    @Mock
+    private UsuarioRepository usuarioRepository;
 
     private ContactoServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new ContactoServiceImpl(repository, RELOJ);
+        service = new ContactoServiceImpl(repository, usuarioRepository, RELOJ);
     }
 
     private static ContactoRequest request(String correo, String mensaje) {
@@ -146,5 +150,47 @@ class ContactoServiceImplTest {
                 .isInstanceOf(RecursoNoEncontradoException.class);
         assertThatThrownBy(() -> service.eliminar(99L))
                 .isInstanceOf(RecursoNoEncontradoException.class);
+    }
+
+    // ── Olvide mi contrasena ──
+
+    @Test
+    @DisplayName("Recuperar: con una cuenta registrada deja una solicitud marcada para el admin")
+    void recuperarConCuenta() {
+        when(usuarioRepository.findByEmailIgnoreCase("ana@buildzone.com"))
+                .thenReturn(Optional.of(Fixtures.usuario(4L, "ana", Rol.USUARIO)));
+        when(repository.countByCorreoIgnoreCaseAndFechaEnvioAfter(anyString(), any())).thenReturn(0L);
+
+        service.solicitarRecuperacion(" Ana@BuildZone.com ");
+
+        ArgumentCaptor<MensajeContacto> captor = ArgumentCaptor.forClass(MensajeContacto.class);
+        verify(repository).save(captor.capture());
+        MensajeContacto m = captor.getValue();
+        assertThat(m.isRecuperacion()).isTrue();
+        assertThat(m.getMotivo()).isEqualTo(MotivoContacto.PROBLEMA_CUENTA);
+        assertThat(m.getIdUsuario()).isEqualTo(4L);
+        assertThat(m.getEstado()).isEqualTo(EstadoMensaje.NUEVO);
+    }
+
+    @Test
+    @DisplayName("Recuperar: si el correo no existe no guarda nada (y no lo avisa)")
+    void recuperarSinCuenta() {
+        when(usuarioRepository.findByEmailIgnoreCase("nadie@correo.com")).thenReturn(Optional.empty());
+
+        service.solicitarRecuperacion("nadie@correo.com");
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Recuperar: respeta el limite antispam sin lanzar error")
+    void recuperarAntispam() {
+        when(usuarioRepository.findByEmailIgnoreCase("ana@buildzone.com"))
+                .thenReturn(Optional.of(Fixtures.usuario(4L, "ana", Rol.USUARIO)));
+        when(repository.countByCorreoIgnoreCaseAndFechaEnvioAfter(anyString(), any())).thenReturn(3L);
+
+        service.solicitarRecuperacion("ana@buildzone.com");
+
+        verify(repository, never()).save(any());
     }
 }

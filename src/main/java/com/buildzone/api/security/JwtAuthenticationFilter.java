@@ -1,6 +1,7 @@
 package com.buildzone.api.security;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.HttpHeaders;
@@ -51,19 +52,60 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
             String token = encabezado.substring(PREFIJO.length()).trim();
 
-            jwtService.extraerUsername(token)
+            var usuarioOpt = jwtService.extraerUsername(token)
                     .flatMap(usuarioRepository::findByUsernameIgnoreCase)
-                    .filter(usuario -> usuario.estaActivo())
-                    .ifPresent(usuario -> {
-                        UsuarioAutenticado principal = new UsuarioAutenticado(
-                                usuario.getId(), usuario.getUsername(), usuario.getRol());
-                        var autenticacion = new UsernamePasswordAuthenticationToken(
-                                principal, null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())));
-                        SecurityContextHolder.getContext().setAuthentication(autenticacion);
-                    });
+                    .filter(usuario -> usuario.estaActivo());
+
+            if (usuarioOpt.isPresent()) {
+                var usuario = usuarioOpt.get();
+                // Con contrasena temporal solo puede ver su perfil, crear su
+                // contrasena nueva y leer lo publico; lo demas responde 403.
+                if (usuario.isDebeCambiarPassword() && !permitidoConPasswordTemporal(request)) {
+                    responderCambioPendiente(request, response);
+                    return;
+                }
+                UsuarioAutenticado principal = new UsuarioAutenticado(
+                        usuario.getId(), usuario.getUsername(), usuario.getRol());
+                var autenticacion = new UsernamePasswordAuthenticationToken(
+                        principal, null,
+                        List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())));
+                SecurityContextHolder.getContext().setAuthentication(autenticacion);
+            }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Rutas que puede usar quien entro con una contrasena temporal: su perfil,
+     * el cambio de contrasena, autenticacion, el formulario de contacto y las
+     * lecturas publicas del catalogo, el blog y los planes.
+     */
+    static boolean permitidoConPasswordTemporal(HttpServletRequest request) {
+        String metodo = request.getMethod();
+        String ruta = request.getRequestURI();
+        if (ruta.startsWith("/api/auth/") || !ruta.startsWith("/api/")) {
+            return true;
+        }
+        if ("GET".equals(metodo)) {
+            return ruta.equals("/api/usuarios/me")
+                    || ruta.startsWith("/api/productos") || ruta.startsWith("/api/marcas")
+                    || ruta.startsWith("/api/categorias") || ruta.equals("/api/planes")
+                    || (ruta.startsWith("/api/noticias") && !ruta.equals("/api/noticias/mias"));
+        }
+        return ("PUT".equals(metodo) && ruta.equals("/api/usuarios/me/password"))
+                || ("POST".equals(metodo) && ruta.equals("/api/contacto"));
+    }
+
+    private static void responderCambioPendiente(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String ruta = request.getRequestURI().replace("\"", "").replace("\\", "");
+        response.getWriter().write("{\"timestamp\":\"" + LocalDateTime.now() + "\",\"status\":403,"
+                + "\"error\":\"Forbidden\",\"codigo\":\"CAMBIO_PASSWORD_PENDIENTE\","
+                + "\"mensaje\":\"Debes crear tu contrasena nueva antes de continuar.\","
+                + "\"ruta\":\"" + ruta + "\",\"detalles\":[]}");
     }
 }

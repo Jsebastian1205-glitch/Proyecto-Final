@@ -115,6 +115,11 @@ async function peticionApi(ruta, opciones = {}) {
         mensaje = datos.mensaje;
       }
     }
+    if (respuesta.status === 403 && datos && datos.codigo === 'CAMBIO_PASSWORD_PENDIENTE'
+        && typeof window.abrirCambioObligatorio === 'function') {
+      // Entró con una contraseña temporal y aún no crea la nueva
+      window.abrirCambioObligatorio();
+    }
     if (respuesta.status === 401) {
       // El token expiró o es inválido: se limpia la sesión local para que
       // la interfaz vuelva al estado "no autenticado" de forma consistente.
@@ -320,4 +325,16 @@ function guardarComparacion(idProductoA, idProductoB) {
 
 function eliminarComparacion(id) {
   return peticionApi(`/comparaciones/${id}`, { method: 'DELETE' });
+}
+
+// ── Recuperar contraseña ──
+
+/** "Olvidé mi contraseña" (público). Responde lo mismo exista o no la cuenta. */
+function solicitarRecuperacionPassword(email) {
+  return peticionApi('/auth/recuperar', { method: 'POST', conAuth: false, body: { email } });
+}
+
+/** ADMIN: genera una contraseña temporal. La respuesta es la única vez que se ve. */
+function restablecerPasswordUsuario(id) {
+  return peticionApi(`/usuarios/${id}/restablecer-password`, { method: 'POST' });
 }

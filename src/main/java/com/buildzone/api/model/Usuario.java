@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import com.buildzone.api.model.enums.EstadoUsuario;
 import com.buildzone.api.model.enums.Rol;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -59,6 +61,14 @@ public class Usuario {
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
 
+    /**
+     * true cuando el administrador le asigno una contrasena temporal: al
+     * entrar con ella, el usuario debe crear una nueva antes de usar la API.
+     */
+    @ColumnDefault("false")
+    @Column(name = "debe_cambiar_password", nullable = false)
+    private boolean debeCambiarPassword;
+
     /** Constructor vacio requerido por JPA. */
     public Usuario() {
     }
@@ -82,6 +92,14 @@ public class Usuario {
     /** @return true si la cuenta puede iniciar sesion y usar la API. */
     public boolean estaActivo() {
         return estado == EstadoUsuario.ACTIVO;
+    }
+
+    public boolean isDebeCambiarPassword() {
+        return debeCambiarPassword;
+    }
+
+    public void setDebeCambiarPassword(boolean debeCambiarPassword) {
+        this.debeCambiarPassword = debeCambiarPassword;
     }
 
     public Long getId() {

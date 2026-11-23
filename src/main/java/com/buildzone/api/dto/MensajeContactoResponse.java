@@ -16,7 +16,8 @@ public record MensajeContactoResponse(
         String mensaje,
         EstadoMensaje estado,
         LocalDateTime fechaEnvio,
-        boolean cuentaRegistrada) {
+        boolean cuentaRegistrada,
+        boolean recuperacion) {
 
     public MensajeContactoResponse(MensajeContacto m) {
         this(m.getIdMensaje(),
@@ -27,6 +28,7 @@ public record MensajeContactoResponse(
                 m.getMensaje(),
                 m.getEstado(),
                 m.getFechaEnvio(),
-                m.getIdUsuario() != null);
+                m.getIdUsuario() != null,
+                m.isRecuperacion());
     }
 }

@@ -96,6 +96,7 @@ public class SecurityConfig {
                     .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/planes/**")).hasRole(ADMIN)
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/usuarios")).hasRole(ADMIN)
                     .requestMatchers(antMatcher(HttpMethod.PATCH, "/api/usuarios/**")).hasRole(ADMIN)
+                    .requestMatchers(antMatcher(HttpMethod.POST, "/api/usuarios/*/restablecer-password")).hasRole(ADMIN)
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/suscripciones")).hasRole(ADMIN)
                     .requestMatchers(antMatcher("/api/productos/**"), antMatcher("/api/marcas/**"),
                             antMatcher("/api/categorias/**")).hasRole(ADMIN)

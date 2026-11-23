@@ -335,7 +335,7 @@
     <div class="section-glow-content">
       <div class="section-label">Planes</div>
       <h2 class="section-title">Elige el plan que se ajuste a ti</h2>
-      <p class="section-sub">Desbloquea comparaciones ilimitadas y funciones exclusivas de BuildZone.</p>
+      <p class="section-sub">Con un plan Premium, mensual o anual, guardas tus comparaciones y publicas en el blog.</p>
 
       <div class="plans-grid" id="plans-grid" style="margin-top:2.5rem">
         <div class="plans-empty">Cargando planes…</div>
@@ -717,23 +717,100 @@
 <div class="modal-overlay" id="login-modal">
   <div class="modal">
     <div class="modal-close" onclick="toggleLogin(false)">✕</div>
-    <div class="modal-header">
-      <div class="modal-icon">⬡</div>
-      <div class="modal-title">Bienvenido de nuevo</div>
-      <div class="modal-sub">Ingresa a tu cuenta de BuildZone</div>
+
+    <!-- Vista 1: iniciar sesión -->
+    <div id="login-vista">
+      <div class="modal-header">
+        <div class="modal-icon">⬡</div>
+        <div class="modal-title">Bienvenido de nuevo</div>
+        <div class="modal-sub">Ingresa a tu cuenta de BuildZone</div>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label">Correo electrónico</label>
+          <input type="email" class="form-input" id="login-email" placeholder="tucorreo@ejemplo.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input type="password" class="form-input" id="login-password" placeholder="Tu contraseña" required minlength="8">
+        </div>
+        <span class="form-link form-link-sm" id="login-olvide" role="button" tabindex="0">¿Olvidaste tu contraseña?</span>
+        <button type="submit" class="btn btn-primary btn-full">Iniciar sesión</button>
+      </form>
+      <div class="modal-footer">¿No tienes cuenta? <span class="form-link" data-open-register="true">Regístrate</span></div>
     </div>
-    <form id="login-form">
+
+    <!-- Vista 2: recuperar contraseña (js/auth.js). La solicitud llega al
+         administrador en Panel admin > Mensajes. -->
+    <div id="recuperar-vista" hidden>
+      <div class="modal-header">
+        <div class="modal-icon">⬡</div>
+        <div class="modal-title">Recupera tu contraseña</div>
+        <div class="modal-sub">Escribe el correo de tu cuenta y el equipo de BuildZone te ayudará a entrar de nuevo.</div>
+      </div>
+      <form id="recuperar-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="recuperar-email">Correo electrónico</label>
+          <input type="email" class="form-input" id="recuperar-email" placeholder="tucorreo@ejemplo.com" maxlength="150" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="recuperar-enviar">Enviar solicitud</button>
+      </form>
+      <div class="modal-footer"><span class="form-link" data-volver-login="true">← Volver a iniciar sesión</span></div>
+    </div>
+
+    <!-- Vista 3: solicitud enviada (mismo texto exista o no la cuenta) -->
+    <div id="recuperar-ok" class="rec-ok" hidden>
+      <div class="ok-icono">✉</div>
+      <div class="modal-title" style="margin-bottom:.8rem">Solicitud enviada</div>
+      <p>Si <b id="recuperar-ok-correo"></b> está registrado, el equipo de BuildZone te escribirá a ese correo con una contraseña temporal.</p>
+      <p>Al entrar con ella te pediremos crear una contraseña nueva.</p>
+      <button type="button" class="btn btn-outline btn-full" data-volver-login="true" style="margin-top:1rem">Volver a iniciar sesión</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal obligatorio: crear contraseña nueva después de entrar con una
+     temporal (js/auth.js). No se puede cerrar; solo cerrar sesión. -->
+<div class="modal-overlay" id="cambio-obligatorio-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-icon">🔒</div>
+      <div class="modal-title">Crea tu contraseña nueva</div>
+      <div class="modal-sub">Entraste con una contraseña temporal. Para seguir usando BuildZone, elige una nueva.</div>
+    </div>
+    <form id="cambio-obligatorio-form" novalidate>
       <div class="form-group">
-        <label class="form-label">Correo electrónico</label>
-        <input type="email" class="form-input" id="login-email" placeholder="tucorreo@ejemplo.com" required>
+        <label class="form-label" for="cambio-nueva">Contraseña nueva</label>
+        <input type="password" class="form-input" id="cambio-nueva" maxlength="72" autocomplete="new-password" required>
       </div>
       <div class="form-group">
-        <label class="form-label">Contraseña</label>
-        <input type="password" class="form-input" id="login-password" placeholder="Tu contraseña" required minlength="8">
+        <label class="form-label" for="cambio-repetir">Repite la contraseña nueva</label>
+        <input type="password" class="form-input" id="cambio-repetir" maxlength="72" autocomplete="new-password" required>
       </div>
-      <button type="submit" class="btn btn-primary btn-full">Iniciar sesión</button>
+      <ul class="req-list" id="cambio-reglas">
+        <li data-regla="largo">Mínimo 8 caracteres</li>
+        <li data-regla="iguales">Las dos coinciden</li>
+        <li data-regla="distinta">Distinta a la temporal</li>
+      </ul>
+      <button type="submit" class="btn btn-primary btn-full" id="cambio-guardar">Guardar y continuar</button>
     </form>
-    <div class="modal-footer">¿No tienes cuenta? <span class="form-link" data-open-register="true">Regístrate</span></div>
+    <div class="modal-footer"><span class="form-link" id="cambio-cerrar-sesion" role="button" tabindex="0">Cerrar sesión</span></div>
+  </div>
+</div>
+
+<!-- Modal del admin: contraseña temporal generada (js/admin.js). Se muestra una sola vez. -->
+<div class="modal-overlay" id="temporal-modal">
+  <div class="modal">
+    <div class="modal-close" data-close-temporal-modal="true">✕</div>
+    <div class="modal-header">
+      <div class="modal-icon">🔑</div>
+      <div class="modal-title">Contraseña temporal</div>
+      <div class="modal-sub" id="temporal-para"></div>
+    </div>
+    <div class="temp-pass"><code id="temporal-valor"></code><button class="btn-mini" type="button" id="temporal-copiar">Copiar</button></div>
+    <div class="aviso-amarillo">Solo se muestra esta vez. Al entrar con ella, el usuario deberá crear una contraseña nueva. Su contraseña anterior ya no funciona.</div>
+    <a class="btn btn-primary btn-full" id="temporal-correo" href="#">Enviar por correo</a>
+    <p class="contacto-nota">Abre tu programa de correo con el destinatario, el asunto y la contraseña temporal ya escritos.</p>
   </div>
 </div>
 

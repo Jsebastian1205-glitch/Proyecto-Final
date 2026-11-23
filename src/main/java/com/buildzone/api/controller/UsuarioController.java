@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.buildzone.api.dto.CambioEstadoRequest;
 import com.buildzone.api.dto.CambioPasswordRequest;
 import com.buildzone.api.dto.CambioRolRequest;
+import com.buildzone.api.dto.PasswordTemporalResponse;
 import com.buildzone.api.dto.PerfilRequest;
 import com.buildzone.api.dto.UsuarioResponse;
 import com.buildzone.api.security.UsuarioAutenticado;
@@ -70,6 +72,13 @@ public class UsuarioController {
                                                       @PathVariable Long id,
                                                       @Valid @RequestBody CambioRolRequest request) {
         return ResponseEntity.ok(usuarioService.cambiarRol(actual.id(), id, request.rol()));
+    }
+
+    /** POST /api/usuarios/{id}/restablecer-password - genera una contrasena temporal (ADMIN). */
+    @PostMapping("/{id}/restablecer-password")
+    public ResponseEntity<PasswordTemporalResponse> restablecerPassword(@AuthenticationPrincipal UsuarioAutenticado actual,
+                                                                        @PathVariable Long id) {
+        return ResponseEntity.ok(usuarioService.restablecerPassword(actual.id(), id));
     }
 
     /** PATCH /api/usuarios/{id}/estado - activa o desactiva una cuenta (ADMIN). */

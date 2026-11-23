@@ -84,7 +84,13 @@ async function manejarEnvioLogin(event) {
     actualizarNavSegunSesion();
     toggleLogin(false);
     event.target.reset();
-    mostrarExito(`¡Bienvenido de nuevo, ${respuesta.usuario.nombre}!`);
+    if (respuesta.usuario.debeCambiarPassword) {
+      // Entró con una contraseña temporal: debe crear una nueva antes de seguir.
+      passwordTemporalIngresada = password;
+      abrirCambioObligatorio();
+    } else {
+      mostrarExito(`¡Bienvenido de nuevo, ${respuesta.usuario.nombre}!`);
+    }
   } catch (error) {
     mostrarError(error.message);
   } finally {
@@ -143,6 +149,7 @@ async function manejarEnvioRegistro(event) {
 }
 
 function cerrarSesion() {
+  cerrarCambioObligatorio();
   limpiarSesion();
   usuarioActual = null;
   actualizarNavSegunSesion();
@@ -163,10 +170,108 @@ async function revalidarSesion() {
     const perfil = await obtenerMiPerfil();
     usuarioActual = perfil;
     guardarSesion(obtenerToken(), perfil);
+    // Si recargó la página sin haber creado su contraseña nueva
+    if (perfil.debeCambiarPassword) abrirCambioObligatorio();
   } catch {
     usuarioActual = obtenerUsuarioGuardado();
   } finally {
     actualizarNavSegunSesion();
+  }
+}
+
+// ── Olvidé mi contraseña (vistas dentro del modal de inicio de sesión) ──
+
+function mostrarVistaLogin(vista) {
+  document.getElementById('login-vista').hidden = vista !== 'login';
+  document.getElementById('recuperar-vista').hidden = vista !== 'recuperar';
+  document.getElementById('recuperar-ok').hidden = vista !== 'ok';
+  if (vista === 'recuperar') {
+    const correo = document.getElementById('recuperar-email');
+    const escrito = document.getElementById('login-email').value.trim();
+    if (!correo.value && escrito) correo.value = escrito;
+    correo.focus();
+  }
+}
+
+async function manejarEnvioRecuperar(event) {
+  event.preventDefault();
+  const email = document.getElementById('recuperar-email').value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    mostrarError('Escribe un correo válido.');
+    return;
+  }
+  const boton = document.getElementById('recuperar-enviar');
+  boton.disabled = true;
+  try {
+    await solicitarRecuperacionPassword(email);
+    document.getElementById('recuperar-ok-correo').textContent = email;
+    mostrarVistaLogin('ok');
+    event.target.reset();
+  } catch (error) {
+    mostrarError(error.message);
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+// ── Contraseña nueva obligatoria (después de entrar con una temporal) ──
+
+let passwordTemporalIngresada = null;
+
+function abrirCambioObligatorio() {
+  const modal = document.getElementById('cambio-obligatorio-modal');
+  if (!modal) return;
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  actualizarReglasCambio();
+  document.getElementById('cambio-nueva').focus();
+}
+
+function cerrarCambioObligatorio() {
+  const modal = document.getElementById('cambio-obligatorio-modal');
+  if (!modal || !modal.classList.contains('active')) return;
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+  document.getElementById('cambio-obligatorio-form').reset();
+  passwordTemporalIngresada = null;
+}
+
+/** Marca en verde las reglas que ya se cumplen. Devuelve true si se cumplen todas. */
+function actualizarReglasCambio() {
+  const nueva = document.getElementById('cambio-nueva').value;
+  const repetir = document.getElementById('cambio-repetir').value;
+  const reglas = {
+    largo: nueva.length >= 8,
+    iguales: nueva.length > 0 && nueva === repetir,
+    // Si recargó la página no se conoce la temporal: la revisa el servidor.
+    distinta: nueva.length > 0 && nueva !== passwordTemporalIngresada,
+  };
+  document.querySelectorAll('#cambio-reglas [data-regla]').forEach((li) => {
+    li.classList.toggle('ok', reglas[li.dataset.regla]);
+  });
+  return Object.values(reglas).every(Boolean);
+}
+
+async function manejarCambioObligatorio(event) {
+  event.preventDefault();
+  if (!actualizarReglasCambio()) {
+    mostrarError('Revisa las reglas de la contraseña nueva.');
+    return;
+  }
+  const boton = document.getElementById('cambio-guardar');
+  boton.disabled = true;
+  try {
+    await cambiarMiPassword({ passwordActual: null, passwordNueva: document.getElementById('cambio-nueva').value });
+    const perfil = await obtenerMiPerfil();
+    usuarioActual = perfil;
+    guardarSesion(obtenerToken(), perfil);
+    cerrarCambioObligatorio();
+    actualizarNavSegunSesion();
+    mostrarExito(`¡Listo, ${perfil.nombre}! Ya puedes usar tu contraseña nueva.`);
+  } catch (error) {
+    mostrarError(error.message);
+  } finally {
+    boton.disabled = false;
   }
 }
 
@@ -179,6 +284,27 @@ function inicializarAuth() {
 
   const registerForm = document.getElementById('register-form');
   if (registerForm) registerForm.addEventListener('submit', manejarEnvioRegistro);
+
+  // Olvidé mi contraseña
+  const olvide = document.getElementById('login-olvide');
+  if (olvide) {
+    olvide.addEventListener('click', () => mostrarVistaLogin('recuperar'));
+    olvide.addEventListener('keydown', (e) => { if (e.key === 'Enter') mostrarVistaLogin('recuperar'); });
+  }
+  document.querySelectorAll('[data-volver-login]').forEach((el) => {
+    el.addEventListener('click', () => mostrarVistaLogin('login'));
+  });
+  const recuperarForm = document.getElementById('recuperar-form');
+  if (recuperarForm) recuperarForm.addEventListener('submit', manejarEnvioRecuperar);
+
+  // Contraseña nueva obligatoria
+  const cambioForm = document.getElementById('cambio-obligatorio-form');
+  if (cambioForm) {
+    cambioForm.addEventListener('submit', manejarCambioObligatorio);
+    cambioForm.addEventListener('input', actualizarReglasCambio);
+  }
+  const salir = document.getElementById('cambio-cerrar-sesion');
+  if (salir) salir.addEventListener('click', cerrarSesion);
 
   const userArea = document.getElementById('nav-user-area');
   if (userArea) {
@@ -220,4 +346,6 @@ window.inicializarAuth = inicializarAuth;
 window.estaAutenticado = estaAutenticado;
 window.esAdmin = esAdmin;
 window.cerrarSesion = cerrarSesion;
+window.mostrarVistaLogin = mostrarVistaLogin;
+window.abrirCambioObligatorio = abrirCambioObligatorio;
 window.obtenerUsuarioActual = () => usuarioActual;

@@ -2322,11 +2322,19 @@ INSERT INTO plan_suscripcion (nombre, descripcion, precio, duracion_dias, activo
 SELECT 'Gratuito', 'Acceso basico al catalogo y al comparador de componentes.', 0, 3650, b'1' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM plan_suscripcion WHERE nombre = 'Gratuito');
 INSERT INTO plan_suscripcion (nombre, descripcion, precio, duracion_dias, activo)
-SELECT 'Premium', 'Comparaciones ilimitadas, alertas de precio y soporte prioritario.', 29900, 30, b'1' FROM DUAL
+SELECT 'Premium', 'Guarda tus duelos en Mis comparaciones y publica noticias, tutoriales y guías en el blog.', 29900, 30, b'1' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM plan_suscripcion WHERE nombre = 'Premium');
 INSERT INTO plan_suscripcion (nombre, descripcion, precio, duracion_dias, activo)
 SELECT 'Premium Anual', 'Todo lo de Premium con dos meses de descuento.', 299000, 365, b'1' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM plan_suscripcion WHERE nombre = 'Premium Anual');
+-- La descripcion del Premium dice solo lo que el plan incluye de verdad
+-- (guardar comparaciones y publicar en el blog). Se corrige en las bases
+-- que ya tenian el plan con una descripcion anterior; si el admin la
+-- cambio a mano, no se toca.
+UPDATE plan_suscripcion SET descripcion = 'Guarda tus duelos en Mis comparaciones y publica noticias, tutoriales y guías en el blog.'
+WHERE nombre = 'Premium' AND descripcion IN (
+    'Comparaciones ilimitadas, alertas de precio y soporte prioritario.',
+    'Comparaciones ilimitadas y soporte prioritario.');
 
 -- ---------------------------------------------------------------------
 -- 10. Cuentas de prueba (rol USUARIO). Contrasena de todas: Prueba1234

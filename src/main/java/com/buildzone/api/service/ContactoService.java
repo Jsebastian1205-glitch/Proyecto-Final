@@ -27,6 +27,14 @@ public interface ContactoService {
      */
     MensajeContactoResponse enviar(ContactoRequest request, UsuarioAutenticado actual);
 
+    /**
+     * "Olvide mi contrasena": si el correo es de una cuenta, deja una
+     * solicitud en los mensajes del administrador. Si no existe (o supera el
+     * limite antispam) no hace nada, sin avisar: asi nadie puede averiguar
+     * que correos estan registrados.
+     */
+    void solicitarRecuperacion(String email);
+
     List<MensajeContactoResponse> listar();
 
     MensajeContactoResponse cambiarEstado(Long id, EstadoMensaje estado);

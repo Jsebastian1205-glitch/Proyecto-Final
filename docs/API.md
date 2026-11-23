@@ -97,7 +97,8 @@ src/main/java/com/buildzone/api/
 | `GET /api/planes` | ✅ | ✅ | ✅ |
 | `GET /api/planes/todos`, `POST/PUT/DELETE /api/planes` | ❌ 401 | ❌ 403 | ✅ |
 | `GET/PUT /api/usuarios/me`, `PUT /api/usuarios/me/password` | ❌ 401 | ✅ | ✅ |
-| `GET /api/usuarios`, `PATCH /api/usuarios/{id}/rol`, `PATCH /api/usuarios/{id}/estado` | ❌ 401 | ❌ 403 | ✅ |
+| `GET /api/usuarios`, `PATCH /api/usuarios/{id}/rol`, `PATCH /api/usuarios/{id}/estado`, `POST /api/usuarios/{id}/restablecer-password` | ❌ 401 | ❌ 403 | ✅ |
+| `POST /api/auth/recuperar` | ✅ | ✅ | ✅ |
 | `POST /api/suscripciones`, `GET /api/suscripciones/me`, `GET /api/suscripciones/me/activa` | ❌ 401 | ✅ | ✅ |
 | `DELETE /api/suscripciones/{id}` | ❌ 401 | ✅ (solo las propias) | ✅ |
 | `GET /api/suscripciones` | ❌ 401 | ❌ 403 | ✅ |
@@ -112,6 +113,24 @@ Base URL local: `http://localhost:8080`
 |---|---|---|---|
 | POST | `/api/auth/registro` | `{"nombre","apellido","username","email","password"}` | 201 `{token, tipo:"Bearer", usuario}` · 400 · 409 |
 | POST | `/api/auth/login` | `{"identificador": "correo o username", "password"}` | 200 `{token, tipo, usuario}` · 401 · 403 (cuenta inactiva) |
+| POST | `/api/auth/recuperar` | `{"email"}` | 202 `{mensaje}`: siempre el mismo, exista o no la cuenta |
+
+#### Recuperar contraseña
+
+No hay servidor de correo (SMTP), así que la recuperación la atiende el ADMIN:
+
+1. `POST /api/auth/recuperar`: si el correo es de una cuenta, deja un mensaje en `/api/contacto` con
+   `motivo: PROBLEMA_CUENTA` y `recuperacion: true`. Si no existe o supera el antispam (3 cada 10 min),
+   no guarda nada. La respuesta es idéntica en todos los casos, para no revelar qué correos existen.
+2. `POST /api/usuarios/{id}/restablecer-password` (ADMIN): genera una contraseña temporal
+   (formato `Bz-XXXX-XXXX`, sin 0/O/1/I/L) y la devuelve una sola vez en `passwordTemporal`; en la base solo
+   queda su hash. La anterior deja de funcionar y la cuenta queda con `debeCambiarPassword: true`.
+   La temporal no vence: sirve hasta que el usuario la use para crear su contraseña. El ADMIN no puede
+   restablecer la suya desde aquí.
+3. Al entrar con la temporal, `usuario.debeCambiarPassword` llega en `true`. Hasta crear la nueva solo puede
+   usar `GET /api/usuarios/me`, `PUT /api/usuarios/me/password`, `POST /api/contacto` y las lecturas públicas;
+   el resto responde 403 con `"codigo": "CAMBIO_PASSWORD_PENDIENTE"`.
+4. `PUT /api/usuarios/me/password` con `{"passwordNueva"}` (sin la actual) y distinta de la temporal.
 
 ### Usuarios — `/api/usuarios`
 
@@ -119,16 +138,17 @@ Base URL local: `http://localhost:8080`
 |---|---|---|---|
 | GET | `/api/usuarios/me` | — | 200 usuario |
 | PUT | `/api/usuarios/me` | `{"nombre","apellido","email"}` | 200 usuario · 409 correo en uso |
-| PUT | `/api/usuarios/me/password` | `{"passwordActual","passwordNueva"}` | 204 · 400 |
+| PUT | `/api/usuarios/me/password` | `{"passwordActual","passwordNueva"}` (sin `passwordActual` si entró con una temporal) | 204 · 400 |
 | GET | `/api/usuarios` | — | 200 lista (ADMIN) |
 | PATCH | `/api/usuarios/{id}/rol` | `{"rol":"ADMIN"}` | 200 (ADMIN) |
 | PATCH | `/api/usuarios/{id}/estado` | `{"estado":"INACTIVO"}` | 200 (ADMIN) |
+| POST | `/api/usuarios/{id}/restablecer-password` | — | 200 `{idUsuario, username, email, passwordTemporal}` (ADMIN) |
 
 Usuario de respuesta:
 ```json
 { "id": 1, "nombre": "Ana", "apellido": "Gómez", "username": "ana.gomez",
   "email": "ana@buildzone.com", "rol": "USUARIO", "estado": "ACTIVO",
-  "fechaRegistro": "2026-09-23T10:15:00" }
+  "fechaRegistro": "2026-09-23T10:15:00", "debeCambiarPassword": false }
 ```
 
 ### Planes — `/api/planes`

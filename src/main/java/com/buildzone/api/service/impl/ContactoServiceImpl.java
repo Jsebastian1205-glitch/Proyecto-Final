@@ -3,6 +3,7 @@ package com.buildzone.api.service.impl;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,8 +13,11 @@ import com.buildzone.api.dto.MensajeContactoResponse;
 import com.buildzone.api.exception.RecursoNoEncontradoException;
 import com.buildzone.api.exception.ReglaNegocioException;
 import com.buildzone.api.model.MensajeContacto;
+import com.buildzone.api.model.Usuario;
 import com.buildzone.api.model.enums.EstadoMensaje;
+import com.buildzone.api.model.enums.MotivoContacto;
 import com.buildzone.api.repository.MensajeContactoRepository;
+import com.buildzone.api.repository.UsuarioRepository;
 import com.buildzone.api.security.UsuarioAutenticado;
 import com.buildzone.api.service.ContactoService;
 
@@ -24,11 +28,18 @@ public class ContactoServiceImpl implements ContactoService {
 
     private static final int LARGO_MINIMO = 10;
 
+    static final String TEXTO_RECUPERACION =
+            "Solicitud de recuperacion de contrasena enviada desde el inicio de sesion. "
+            + "Genera una contrasena temporal en Panel admin > Usuarios > Restablecer contrasena.";
+
     private final MensajeContactoRepository repository;
+    private final UsuarioRepository usuarioRepository;
     private final Clock clock;
 
-    public ContactoServiceImpl(MensajeContactoRepository repository, Clock clock) {
+    public ContactoServiceImpl(MensajeContactoRepository repository, UsuarioRepository usuarioRepository,
+                               Clock clock) {
         this.repository = repository;
+        this.usuarioRepository = usuarioRepository;
         this.clock = clock;
     }
 
@@ -61,6 +72,36 @@ public class ContactoServiceImpl implements ContactoService {
         nuevo.setFechaEnvio(ahora);
         nuevo.setIdUsuario(actual != null ? actual.id() : null);
         return new MensajeContactoResponse(repository.save(nuevo));
+    }
+
+    @Override
+    @Transactional
+    public void solicitarRecuperacion(String email) {
+        String correo = email.trim().toLowerCase();
+        Optional<Usuario> cuenta = usuarioRepository.findByEmailIgnoreCase(correo);
+        if (cuenta.isEmpty()) {
+            return;
+        }
+        LocalDateTime ahora = LocalDateTime.now(clock);
+        if (repository.countByCorreoIgnoreCaseAndFechaEnvioAfter(correo, ahora.minusMinutes(VENTANA_MINUTOS))
+                >= MAXIMO_MENSAJES) {
+            return;
+        }
+        Usuario u = cuenta.get();
+        MensajeContacto solicitud = new MensajeContacto();
+        solicitud.setNombre(recortar((u.getNombre() + " " + u.getApellido()).trim(), 100));
+        solicitud.setCorreo(u.getEmail());
+        solicitud.setMotivo(MotivoContacto.PROBLEMA_CUENTA);
+        solicitud.setMensaje(TEXTO_RECUPERACION);
+        solicitud.setEstado(EstadoMensaje.NUEVO);
+        solicitud.setFechaEnvio(ahora);
+        solicitud.setIdUsuario(u.getId());
+        solicitud.setRecuperacion(true);
+        repository.save(solicitud);
+    }
+
+    private static String recortar(String texto, int largo) {
+        return texto.length() <= largo ? texto : texto.substring(0, largo);
     }
 
     @Override

@@ -82,7 +82,7 @@ public class DatosInicialesConfig implements ApplicationRunner {
         planRepository.save(new PlanSuscripcion("Gratuito",
                 "Acceso basico al catalogo y al comparador de componentes.", BigDecimal.ZERO, 3650));
         planRepository.save(new PlanSuscripcion("Premium",
-                "Comparaciones ilimitadas, alertas de precio y soporte prioritario.", new BigDecimal("29900"), 30));
+                "Guarda tus duelos en Mis comparaciones y publica noticias, tutoriales y guías en el blog.", new BigDecimal("29900"), 30));
         planRepository.save(new PlanSuscripcion("Premium Anual",
                 "Todo lo de Premium con dos meses de descuento.", new BigDecimal("299000"), 365));
         LOG.info("Planes de suscripcion iniciales creados.");

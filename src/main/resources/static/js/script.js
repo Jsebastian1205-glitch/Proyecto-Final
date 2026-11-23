@@ -52,6 +52,8 @@ function toggleLogin(show) {
 
   modal.classList.toggle('active', show);
   document.body.style.overflow = show ? 'hidden' : '';
+  // Al abrirlo siempre se muestra "Iniciar sesión" (no la vista de recuperar)
+  if (show && typeof window.mostrarVistaLogin === 'function') window.mostrarVistaLogin('login');
 }
 
 // Muestra u oculta el modal de registro

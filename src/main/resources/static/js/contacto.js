@@ -154,7 +154,7 @@ function renderizarMensajes() {
     <tr class="${m.estado === 'NUEVO' ? 'mensaje-nuevo' : ''}">
       <td>${m.idMensaje}</td>
       <td>${escaparHtml(m.nombre)}<br><span class="table-subtext">${escaparHtml(m.correo)}</span></td>
-      <td>${escaparHtml(m.motivoTexto)}</td>
+      <td>${escaparHtml(m.motivoTexto)}${m.recuperacion ? '<br><span class="badge badge-ambar" style="margin-top:.3rem">Recuperar contraseña</span>' : ''}</td>
       <td>${escaparHtml(formatearFechaMensaje(m.fechaEnvio))}</td>
       <td>${badgeEstadoMensaje(m.estado)}</td>
       <td class="admin-table-actions">
@@ -192,7 +192,7 @@ function pintarModalMensaje(m) {
   document.getElementById('mensaje-modal-title').textContent = `Mensaje #${m.idMensaje}`;
   document.getElementById('mensaje-meta').innerHTML = `
     <dt>De</dt><dd>${escaparHtml(m.nombre)} · ${escaparHtml(m.correo)}</dd>
-    <dt>Motivo</dt><dd>${escaparHtml(m.motivoTexto)}</dd>
+    <dt>Motivo</dt><dd>${escaparHtml(m.motivoTexto)}${m.recuperacion ? ' <span class="badge badge-ambar">Recuperar contraseña</span>' : ''}</dd>
     <dt>Recibido</dt><dd>${escaparHtml(formatearFechaMensaje(m.fechaEnvio))}</dd>
     <dt>Cuenta</dt><dd>${m.cuentaRegistrada ? 'Usuario registrado' : 'Visitante sin cuenta'}</dd>
     <dt>Estado</dt><dd>${badgeEstadoMensaje(m.estado)}</dd>`;

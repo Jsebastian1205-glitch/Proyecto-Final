@@ -15,10 +15,11 @@ public record UsuarioResponse(
         String email,
         Rol rol,
         EstadoUsuario estado,
-        LocalDateTime fechaRegistro) {
+        LocalDateTime fechaRegistro,
+        boolean debeCambiarPassword) {
 
     public static UsuarioResponse desde(Usuario u) {
         return new UsuarioResponse(u.getId(), u.getNombre(), u.getApellido(), u.getUsername(),
-                u.getEmail(), u.getRol(), u.getEstado(), u.getFechaRegistro());
+                u.getEmail(), u.getRol(), u.getEstado(), u.getFechaRegistro(), u.isDebeCambiarPassword());
     }
 }

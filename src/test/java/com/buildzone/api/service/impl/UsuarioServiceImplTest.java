@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.buildzone.api.Fixtures;
 import com.buildzone.api.dto.CambioPasswordRequest;
+import com.buildzone.api.dto.PasswordTemporalResponse;
 import com.buildzone.api.dto.PerfilRequest;
 import com.buildzone.api.dto.UsuarioResponse;
 import com.buildzone.api.exception.RecursoDuplicadoException;
@@ -135,5 +136,78 @@ class UsuarioServiceImplTest {
 
         assertThatThrownBy(() -> usuarioService.cambiarEstado(1L, 99L, EstadoUsuario.INACTIVO))
                 .isInstanceOf(RecursoNoEncontradoException.class);
+    }
+
+    // ── Recuperar contrasena ──
+
+    @Test
+    @DisplayName("Restablecer: genera una temporal, guarda su hash y marca que debe cambiarla")
+    void restablecerPassword() {
+        Usuario ana = Fixtures.usuario(2L, "ana", Rol.USUARIO);
+        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(ana));
+        when(passwordEncoder.encode(org.mockito.ArgumentMatchers.anyString())).thenReturn("HASH-TEMPORAL");
+
+        PasswordTemporalResponse r = usuarioService.restablecerPassword(1L, 2L);
+
+        assertThat(r.passwordTemporal()).matches("Bz-[A-Z2-9]{4}-[A-Z2-9]{4}");
+        assertThat(r.email()).isEqualTo("ana@buildzone.com");
+        assertThat(ana.getPasswordHash()).isEqualTo("HASH-TEMPORAL");
+        assertThat(ana.isDebeCambiarPassword()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Restablecer: el admin no puede restablecer su propia contrasena desde el panel")
+    void restablecerPropia() {
+        assertThatThrownBy(() -> usuarioService.restablecerPassword(1L, 1L))
+                .isInstanceOf(ReglaNegocioException.class);
+    }
+
+    @Test
+    @DisplayName("Temporales: formato facil de dictar y sin caracteres que se confunden")
+    void formatoTemporal() {
+        for (int i = 0; i < 200; i++) {
+            assertThat(UsuarioServiceImpl.generarPasswordTemporal())
+                    .matches("Bz-[A-Z2-9]{4}-[A-Z2-9]{4}")
+                    .doesNotContain("0", "O", "1", "I", "L");
+        }
+    }
+
+    @Test
+    @DisplayName("Con temporal: crea la nueva sin pedir la actual y se quita la marca")
+    void cambiarDesdeTemporal() {
+        Usuario ana = Fixtures.usuario(2L, "ana", Rol.USUARIO);
+        ana.setDebeCambiarPassword(true);
+        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(ana));
+        when(passwordEncoder.matches("MiClave2026", "HASH-2")).thenReturn(false);
+        when(passwordEncoder.encode("MiClave2026")).thenReturn("HASH-NUEVO");
+
+        usuarioService.cambiarPassword(2L, new CambioPasswordRequest(null, "MiClave2026"));
+
+        assertThat(ana.getPasswordHash()).isEqualTo("HASH-NUEVO");
+        assertThat(ana.isDebeCambiarPassword()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Con temporal: la nueva no puede ser la misma temporal")
+    void nuevaIgualATemporal() {
+        Usuario ana = Fixtures.usuario(2L, "ana", Rol.USUARIO);
+        ana.setDebeCambiarPassword(true);
+        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(ana));
+        when(passwordEncoder.matches("Bz-AAAA-BBBB", "HASH-2")).thenReturn(true);
+
+        assertThatThrownBy(() -> usuarioService.cambiarPassword(2L, new CambioPasswordRequest(null, "Bz-AAAA-BBBB")))
+                .isInstanceOf(ReglaNegocioException.class)
+                .hasMessageContaining("temporal");
+    }
+
+    @Test
+    @DisplayName("Sin temporal: la contrasena actual sigue siendo obligatoria")
+    void actualObligatoria() {
+        Usuario ana = Fixtures.usuario(2L, "ana", Rol.USUARIO);
+        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(ana));
+
+        assertThatThrownBy(() -> usuarioService.cambiarPassword(2L, new CambioPasswordRequest(" ", "MiClave2026")))
+                .isInstanceOf(ReglaNegocioException.class)
+                .hasMessageContaining("actual");
     }
 }
