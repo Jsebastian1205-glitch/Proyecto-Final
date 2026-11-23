@@ -490,7 +490,7 @@
 
 <!-- Modal de producto (crear / editar) usado por la pestaña Catálogo -->
 <div class="modal-overlay" id="producto-modal">
-  <div class="modal">
+  <div class="modal modal-ancho">
     <div class="modal-close" data-close-producto-modal="true">✕</div>
     <div class="modal-header">
       <div class="modal-icon">⬡</div>
@@ -517,6 +517,22 @@
       <div class="form-group">
         <label class="form-label" for="producto-categoria">Categoría</label>
         <select class="form-input" id="producto-categoria" required></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="producto-precio">Precio de referencia (COP, opcional)</label>
+        <input type="number" class="form-input" id="producto-precio" min="0" step="1" placeholder="Ej. 850000" aria-describedby="producto-precio-ayuda">
+        <div class="form-ayuda" id="producto-precio-ayuda">Precio en pesos colombianos. Se guarda como "precio de referencia".</div>
+      </div>
+      <fieldset class="form-group form-puntajes">
+        <legend class="form-label">Puntajes del comparador (0 a 100)</legend>
+        <label><span>Potencia</span><input type="number" class="form-input" id="producto-puntaje-potencia" min="0" max="100" step="1"></label>
+        <label><span>Eficiencia</span><input type="number" class="form-input" id="producto-puntaje-eficiencia" min="0" max="100" step="1"></label>
+        <label><span>Valor</span><input type="number" class="form-input" id="producto-puntaje-valor" min="0" max="100" step="1"></label>
+        <label><span>Popularidad</span><input type="number" class="form-input" id="producto-puntaje-popularidad" min="0" max="100" step="1"></label>
+      </fieldset>
+      <div class="form-group">
+        <label class="form-label" for="producto-ficha">Ficha técnica (un dato por renglón: <code>Atributo: valor</code>)</label>
+        <textarea class="form-input" id="producto-ficha" rows="6" placeholder="Núcleos: 8&#10;Hilos: 16&#10;Socket: AM5"></textarea>
       </div>
       <button type="submit" class="btn btn-primary btn-full" id="producto-form-submit">Guardar producto</button>
     </form>

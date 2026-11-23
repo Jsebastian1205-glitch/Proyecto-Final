@@ -161,8 +161,17 @@ Cada recurso tiene los 5 endpoints CRUD (`GET` lista, `GET /{id}`, `POST`, `PUT 
 
 - Marca / Categoría: body `{"nombre","descripcion"}`, nombre único (409 si se repite). Si se
   intenta borrar una marca o categoría que todavía tiene productos, la respuesta es 409.
-- Producto: body `{"nombre","descripcion","imagen","idMarca","idCategoria"}`. La respuesta
-  incluye `nombreMarca` y `nombreCategoria`.
+- Producto: body `{"nombre","descripcion","imagen","idMarca","idCategoria"}` y, opcionales,
+  `precioReferencia` (COP), `puntajes` (`{"potencia","eficiencia","valor","popularidad"}`, 0 a 100)
+  y `especificaciones` (`[{"atributo","valor","unidad"}]`). Lo que no se envía no se modifica; los
+  precios reales de las tiendas no se tocan desde aquí.
+- La respuesta de producto incluye `nombreMarca`, `nombreCategoria` y lo que sale de las tablas
+  `especificacion`, `precio` y `fuente_precio`:
+  - `precio`: el menor precio entre las tiendas (o `null`).
+  - `precios`: `[{"tienda","valor","fechaConsulta","url","referencia"}]`, de menor a mayor
+    (`referencia: true` es el precio estimado de BuildZone, no una tienda).
+  - `puntajes`: los 4 puntajes del comparador.
+  - `especificaciones`: la ficha técnica.
 
 ### Blog — `/api/noticias`
 

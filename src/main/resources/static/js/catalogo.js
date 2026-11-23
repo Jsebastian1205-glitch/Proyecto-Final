@@ -59,10 +59,26 @@ function buscarReferencia(marca, nombre) {
   );
 }
 
-/** Convierte un ProductoResponse del backend al formato que usa script.js. */
+const CLAVES_PUNTAJE = ['potencia', 'eficiencia', 'valor', 'popularidad'];
+
+/** Puntajes del comparador que vienen de la BD (null si falta alguno). */
+function puntajesDesdeApi(puntajes) {
+  if (!puntajes) return null;
+  const completos = CLAVES_PUNTAJE.every((k) => Number.isFinite(puntajes[k]));
+  return completos ? Object.fromEntries(CLAVES_PUNTAJE.map((k) => [k, puntajes[k]])) : null;
+}
+
+/**
+ * Convierte un ProductoResponse del backend al formato que usa script.js.
+ * El precio, los puntajes y la ficha técnica salen de la base de datos; solo
+ * si un producto no los tiene se usan los datos locales de script.js.
+ */
 function adaptarProducto(dto) {
   const category = slugCategoria(dto.nombreCategoria);
   const referencia = buscarReferencia(dto.nombreMarca, dto.nombre);
+  const fichaApi = (dto.especificaciones || [])
+    .map((e) => [e.atributo, e.unidad ? `${e.valor} ${e.unidad}` : e.valor]);
+  const precioApi = dto.precio === null || dto.precio === undefined ? null : Number(dto.precio);
   return {
     id: `api-${dto.idProducto}`,
     idProducto: dto.idProducto,
@@ -71,9 +87,14 @@ function adaptarProducto(dto) {
     brand: dto.nombreMarca,
     name: dto.nombre,
     description: dto.descripcion || '',
-    price: referencia ? referencia.price : null,
+    price: precioApi ?? (referencia ? referencia.price : null),
     icon: ICONOS_CATEGORIA[category] || '🧩',
-    stats: referencia ? referencia.stats : null,
+    stats: puntajesDesdeApi(dto.puntajes) || (referencia ? referencia.stats : null),
+    specs: fichaApi.length ? fichaApi : null,
+    // Precio en cada tienda, de menor a mayor (se muestran en la ficha del producto)
+    precios: (dto.precios || []).map((p) => ({
+      tienda: p.tienda, valor: Number(p.valor), fecha: p.fechaConsulta, url: p.url, referencia: !!p.referencia,
+    })),
     // Id del producto local equivalente: de ahí sale su ficha técnica (PRODUCT_SPECS)
     refId: referencia ? referencia.id : null,
   };
@@ -120,7 +141,7 @@ function renderizarCatalogoAdmin(productos) {
     .map(
       (p) => `
         <tr>
-          <td>${escaparHtml(p.nombre)}<br><span class="table-subtext">${escaparHtml(p.descripcion || '')}</span></td>
+          <td>${escaparHtml(p.nombre)}<br><span class="table-subtext">${escaparHtml(resumenAdmin(p))}</span></td>
           <td>${escaparHtml(p.nombreMarca)}</td>
           <td>${escaparHtml(p.nombreCategoria)}</td>
           <td class="admin-table-actions">
@@ -130,6 +151,40 @@ function renderizarCatalogoAdmin(productos) {
         </tr>`
     )
     .join('');
+}
+
+/** Debajo del nombre, en la tabla admin: precio, ficha y puntajes guardados. */
+function resumenAdmin(p) {
+  const partes = [];
+  partes.push(p.precio !== null && p.precio !== undefined ? `Desde $${Number(p.precio).toLocaleString('es-CO')}` : 'Sin precio');
+  const datos = (p.especificaciones || []).length;
+  partes.push(datos ? `Ficha: ${datos} datos` : 'Sin ficha técnica');
+  if (!puntajesDesdeApi(p.puntajes)) partes.push('Sin puntajes');
+  return partes.join(' · ');
+}
+
+/** Ficha técnica como texto: un renglón "Atributo: valor" por dato. */
+function fichaATexto(especificaciones) {
+  return (especificaciones || []).map((e) => `${e.atributo}: ${e.unidad ? `${e.valor} ${e.unidad}` : e.valor}`).join('\n');
+}
+
+/**
+ * Lee el cuadro de la ficha técnica. Cada renglón no vacío debe tener la
+ * forma "Atributo: valor". Lanza un Error con el número de renglón si no.
+ */
+function textoAFicha(texto) {
+  return texto.split('\n').map((l) => l.trim()).filter(Boolean).map((linea, i) => {
+    const pos = linea.indexOf(':');
+    const atributo = pos > 0 ? linea.slice(0, pos).trim() : '';
+    const valor = pos > 0 ? linea.slice(pos + 1).trim() : '';
+    if (!atributo || !valor) {
+      throw new Error(`Ficha técnica, renglón ${i + 1}: escribe "Atributo: valor" (por ejemplo "Socket: AM5").`);
+    }
+    if (atributo.toLowerCase().startsWith('puntaje')) {
+      throw new Error(`Ficha técnica, renglón ${i + 1}: los puntajes van en sus casillas, no en la ficha.`);
+    }
+    return { atributo, valor, unidad: null };
+  });
 }
 
 function llenarSelect(select, opciones, campoId, seleccionado) {
@@ -174,6 +229,19 @@ async function abrirModalProducto(producto) {
   llenarSelect(document.getElementById('producto-marca'), marcas, 'idMarca', producto ? producto.idMarca : null);
   llenarSelect(document.getElementById('producto-categoria'), categorias, 'idCategoria', producto ? producto.idCategoria : null);
 
+  // Precio de referencia (el de las tiendas no se edita aquí), puntajes y ficha
+  const precioRef = producto ? (producto.precios || []).find((p) => p.referencia) : null;
+  document.getElementById('producto-precio').value = precioRef ? Math.round(Number(precioRef.valor)) : '';
+  const tiendas = producto ? (producto.precios || []).filter((p) => !p.referencia).length : 0;
+  document.getElementById('producto-precio-ayuda').textContent = tiendas
+    ? `Este producto tiene ${tiendas} precio(s) de tiendas; en la página se muestra el menor.`
+    : 'Precio en pesos colombianos. Se guarda como "precio de referencia".';
+  CLAVES_PUNTAJE.forEach((k) => {
+    const valor = producto && producto.puntajes ? producto.puntajes[k] : undefined;
+    document.getElementById(`producto-puntaje-${k}`).value = Number.isFinite(valor) ? valor : '';
+  });
+  document.getElementById('producto-ficha').value = producto ? fichaATexto(producto.especificaciones) : '';
+
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
@@ -203,6 +271,22 @@ async function manejarEnvioProducto(event) {
   const boton = document.getElementById('producto-form-submit');
 
   try {
+    // Precio de referencia: solo si se escribió (vacío = no cambiar)
+    const precio = document.getElementById('producto-precio').value.trim();
+    if (precio !== '') datos.precioReferencia = Number(precio);
+    // Puntajes: los cuatro o ninguno, porque el comparador usa los cuatro
+    const puntajes = {};
+    CLAVES_PUNTAJE.forEach((k) => {
+      const v = document.getElementById(`producto-puntaje-${k}`).value.trim();
+      if (v !== '') puntajes[k] = Number(v);
+    });
+    const llenos = Object.keys(puntajes).length;
+    if (llenos > 0 && llenos < CLAVES_PUNTAJE.length) {
+      throw new Error('Llena los cuatro puntajes (potencia, eficiencia, valor y popularidad) o déjalos todos vacíos.');
+    }
+    if (llenos) datos.puntajes = puntajes;
+    datos.especificaciones = textoAFicha(document.getElementById('producto-ficha').value);
+
     if (boton) boton.disabled = true;
     if (id) {
       await actualizarProducto(Number(id), datos);

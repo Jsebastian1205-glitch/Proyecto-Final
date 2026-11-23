@@ -1010,8 +1010,9 @@ function buildProductCard(p, { featured = false } = {}) {
 
 let productDetailTrigger = null;
 
-/** Ficha del producto: la propia o la del producto local equivalente (API). */
+/** Ficha del producto: la de la BD, la propia o la del producto local equivalente. */
 function productSpecs(product) {
+  if (product.specs && product.specs.length) return product.specs;
   const porNombre = { 'amd ryzen 7 7800x3d': 'r7-7800x3d' }; // productos que solo existen en la BD
   const clave = `${product.brand || ''} ${product.name || ''}`.toLowerCase();
   return PRODUCT_SPECS[product.id] || (product.refId && PRODUCT_SPECS[product.refId]) ||
@@ -1056,8 +1057,35 @@ function buildProductDetail(product) {
     <div class="product-detail-section">Ficha técnica</div>
     ${specsHtml}
     ${statsHtml}
+    ${storePricesHtml(product)}
     ${hasStats ? `<button type="button" class="btn btn-primary btn-full product-detail-compare" data-compare-id="${escaparHtml(product.id)}">Comparar este producto</button>` : ''}
     <p class="product-detail-note">Datos de referencia del fabricante; pueden variar según la versión del producto.</p>`;
+}
+
+/** Lista "Precios en tiendas" de la ficha (solo productos que vienen de la API). */
+function storePricesHtml(product) {
+  const precios = (product.precios || []);
+  if (!precios.length) return '';
+  const tiendas = precios.filter((p) => !p.referencia);
+  const fecha = (iso) => {
+    const d = iso ? new Date(iso) : null;
+    return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  };
+  const enlaceSeguro = (url) => (/^https?:\/\//i.test(url || '') ? url : null);
+  const filas = precios.map((p, i) => {
+    const url = enlaceSeguro(p.url);
+    return `
+      <li class="store-price${i === 0 ? ' is-best' : ''}">
+        <span class="store-name">${escaparHtml(p.referencia ? 'Precio de referencia BuildZone' : p.tienda)}${i === 0 && precios.length > 1 ? '<em>Mejor precio</em>' : ''}</span>
+        <span class="store-value">${formatProductPrice(p.valor)}</span>
+        <span class="store-meta">${p.referencia ? 'Estimado, no es de una tienda' : `Consultado el ${escaparHtml(fecha(p.fecha))}`}</span>
+        ${url ? `<a class="store-link" href="${escaparHtml(url)}" target="_blank" rel="noopener noreferrer">Ver en la tienda ↗</a>` : ''}
+      </li>`;
+  }).join('');
+  return `
+    <div class="product-detail-section">${tiendas.length ? `Precios en tiendas (${tiendas.length})` : 'Precio'}</div>
+    <ul class="store-prices">${filas}</ul>
+    ${tiendas.length ? '<p class="product-detail-note">Los precios cambian con frecuencia; confírmalos en la tienda antes de comprar.</p>' : ''}`;
 }
 
 /** Abre la ventana con la ficha técnica del producto. */
