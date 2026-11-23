@@ -144,6 +144,24 @@ respaldo `http://localhost:8080/api`. Si el backend está apagado, Productos y C
 siguen funcionando con los datos locales de `js/script.js`, y las funciones de cuenta
 muestran un aviso de conexión.
 
+## Pruebas automáticas
+
+```
+mvn test
+```
+
+Corren sobre una base H2 en memoria (perfil `test`), así que no necesitan XAMPP ni tocan
+la base `buildzone`. Están en `src/test/java`:
+
+| Archivo | Qué revisa |
+|---|---|
+| `integracion/ApiIntegracionTest` | API completa: registro, login, permisos por rol, suscripciones |
+| `integracion/BlogYCatalogoIntegracionTest` | Blog (público, 401 sin sesión, 403 sin plan de pago, solo el autor edita) y productos con precio, puntajes y ficha |
+| `service/impl/*Test` | Reglas de negocio de cada servicio con Mockito (auth, usuarios, planes, suscripciones, marcas, productos, noticias) |
+| `security/JwtServiceTest` | Generación y validación del token JWT |
+
+`iniciar.bat` no ejecuta las pruebas, así que no hace más lento el arranque.
+
 ## Control de versiones
 
 Repositorio Git único con commits pequeños por módulo, con prefijo según el tipo de cambio:

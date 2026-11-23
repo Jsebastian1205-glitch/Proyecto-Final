@@ -44,6 +44,10 @@ public class FuentePrecio {
         return idFuente;
     }
 
+    public void setIdFuente(Integer idFuente) {
+        this.idFuente = idFuente;
+    }
+
     public String getNombre() {
         return nombre;
     }

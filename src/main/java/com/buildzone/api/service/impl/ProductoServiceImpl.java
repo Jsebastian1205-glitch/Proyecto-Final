@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -191,7 +192,7 @@ public class ProductoServiceImpl implements ProductoService {
         if (request.getPrecioReferencia() != null) {
             FuentePrecio referencia = fuenteReferencia();
             Precio precio = precioRepository.findByProductoIdProductoOrderByValorAsc(id).stream()
-                    .filter(p -> p.getFuente().getIdFuente().equals(referencia.getIdFuente()))
+                    .filter(p -> Objects.equals(p.getFuente().getIdFuente(), referencia.getIdFuente()))
                     .findFirst()
                     .orElseGet(Precio::new);
             precio.setProducto(producto);
