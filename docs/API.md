@@ -91,6 +91,8 @@ src/main/java/com/buildzone/api/
 | `GET /api/noticias/mias` | ❌ 401 | ✅ | ✅ |
 | `POST /api/noticias` | ❌ 401 | ✅ (con plan de pago activo, mensual o anual; Gratuito o sin plan 403) | ✅ |
 | `PUT/DELETE /api/noticias/{id}` | ❌ 401 | ✅ (solo las propias) | ✅ |
+| `POST /api/contacto` | ✅ | ✅ | ✅ |
+| `GET /api/contacto`, `PATCH /api/contacto/{id}/estado`, `DELETE /api/contacto/{id}` | ❌ 401 | ❌ 403 | ✅ |
 | `GET /api/planes` | ✅ | ✅ | ✅ |
 | `GET /api/planes/todos`, `POST/PUT/DELETE /api/planes` | ❌ 401 | ❌ 403 | ✅ |
 | `GET/PUT /api/usuarios/me`, `PUT /api/usuarios/me/password` | ❌ 401 | ✅ | ✅ |
@@ -181,6 +183,23 @@ el inicio del contenido). La lista viene de la más reciente a la más antigua y
 incluye `fechaPublicacion` y `autor` (quien la publicó).
 Pueden publicar el ADMIN y los usuarios con una suscripción activa a un plan de pago (mensual o anual); cada usuario edita
 y elimina solo sus publicaciones (`GET /api/noticias/mias` las lista) y el ADMIN, todas.
+
+### Contacto — `/api/contacto`
+
+Formulario de la página Contacto, tabla `mensaje_contacto`.
+
+- `POST /api/contacto` (público, con o sin sesión). Body:
+  `{"nombre","correo","motivo","mensaje"}`, con `motivo` = `DUDA_PRODUCTO`, `SUGERENCIA`,
+  `PROBLEMA_CUENTA`, `PLANES` u `OTRO`. Valida correo y mensaje de 10 a 1000 caracteres.
+  Antispam: como máximo 3 mensajes por correo cada 10 minutos (el cuarto da 400).
+  Responde 201 con el mensaje guardado (`idMensaje` es el número que ve el visitante).
+  Si hay sesión, se guarda la cuenta (`cuentaRegistrada: true`).
+- `GET /api/contacto` (ADMIN): todos los mensajes, el más reciente primero.
+- `PATCH /api/contacto/{id}/estado` (ADMIN): `{"estado": "NUEVO" | "LEIDO" | "RESPONDIDO"}`.
+- `DELETE /api/contacto/{id}` (ADMIN).
+
+La API no envía correos (no hay servidor SMTP configurado): el administrador responde desde
+su propio correo con el botón "Responder por correo" del panel (enlace `mailto:`).
 
 ### Formato de error (todas las rutas)
 

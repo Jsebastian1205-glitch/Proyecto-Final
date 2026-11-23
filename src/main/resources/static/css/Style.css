@@ -1442,3 +1442,41 @@ footer {
 .form-puntajes label { display: grid; gap: .25rem; font-size: .78rem; color: var(--gray2); }
 .form-ayuda { font-size: .76rem; color: var(--gray2); margin-top: .3rem; }
 @media (max-width: 560px) { .form-puntajes { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── Contacto: formulario, tarjeta lateral y confirmación ── */
+.contacto-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1.5rem; margin-top: 2rem; max-width: 980px; align-items: start; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.contacto-contador { text-align: right; font-size: .75rem; color: var(--gray2); margin-top: .3rem; font-family: var(--font-mono); }
+.contacto-contador.cerca { color: #f59e0b; }
+.contacto-nota { font-size: .78rem; color: var(--gray2); text-align: center; margin-top: .75rem; }
+.contacto-info { padding: 1.5rem; border-radius: 18px; background: var(--glass-bg); border: 1px solid var(--glass-borde); }
+.contacto-info-titulo { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .15em; text-transform: uppercase; color: var(--purple3); margin-bottom: .9rem; }
+.contacto-pasos { list-style: none; counter-reset: paso; display: grid; gap: .9rem; padding: 0; margin: 0; }
+.contacto-pasos li { counter-increment: paso; display: grid; grid-template-columns: 2rem 1fr; column-gap: .75rem; }
+.contacto-pasos li::before { content: counter(paso); grid-row: span 2; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; background: rgba(124,58,237,.18); border: 1px solid var(--purple); color: var(--purple4); font-weight: 700; }
+.contacto-pasos b { color: var(--white); }
+.contacto-pasos span { font-size: .85rem; color: var(--gray2); }
+.contacto-tip { font-size: .88rem; color: var(--gray1); line-height: 1.5; }
+.contacto-tip a { color: var(--purple4); }
+.contacto-ok { text-align: center; padding: 2.5rem 1.5rem; }
+.contacto-ok[hidden], #contacto-form[hidden] { display: none; }
+.contacto-ok .ok-icono { width: 64px; height: 64px; margin: 0 auto 1rem; border-radius: 50%; display: grid; place-items: center; font-size: 1.8rem; background: rgba(34,197,94,.15); border: 1px solid #22c55e; color: #22c55e; }
+.contacto-ok h3 { font-family: var(--font-title); font-size: 1.4rem; margin-bottom: .5rem; }
+.contacto-ok p { color: var(--gray2); font-size: .92rem; }
+.contacto-ok .ticket { display: inline-block; margin: 1rem 0; padding: .4rem 1rem; border-radius: 999px; font-family: var(--font-mono); border: 1px solid var(--purple); color: var(--purple4); }
+
+/* ── Panel admin: pestaña Mensajes ── */
+.tab-badge { display: inline-grid; place-items: center; min-width: 1.3rem; height: 1.3rem; padding: 0 .35rem; margin-left: .35rem; border-radius: 999px; background: var(--purple); color: #fff; font-size: .72rem; font-weight: 700; }
+.tab-badge[hidden] { display: none; }
+.admin-filtros { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.admin-table tr.mensaje-nuevo td:nth-child(2) { font-weight: 700; }
+.msg-meta { display: grid; grid-template-columns: auto 1fr; gap: .3rem 1rem; font-size: .88rem; margin: 0; }
+.msg-meta dt { color: var(--gray2); }
+.msg-meta dd { margin: 0; color: var(--white); overflow-wrap: anywhere; }
+.msg-full { white-space: pre-wrap; overflow-wrap: anywhere; background: rgba(255,255,255,.04); border: 1px solid var(--glass-borde); border-radius: 12px; padding: 1rem; color: var(--gray1); line-height: 1.55; margin: 1rem 0; max-height: 45vh; overflow-y: auto; }
+.msg-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.msg-acciones .btn { text-align: center; justify-content: center; }
+
+@media (max-width: 760px) {
+  .contacto-grid, .form-row-2, .msg-acciones { grid-template-columns: 1fr; }
+}

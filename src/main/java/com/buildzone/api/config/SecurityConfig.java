@@ -79,6 +79,9 @@ public class SecurityConfig {
                     // Publico
                     .requestMatchers(antMatcher("/api/auth/**")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/planes")).permitAll()
+                    // Contacto: enviar es publico; ver y gestionar mensajes, solo ADMIN
+                    .requestMatchers(antMatcher(HttpMethod.POST, "/api/contacto")).permitAll()
+                    .requestMatchers(antMatcher("/api/contacto/**")).hasRole(ADMIN)
                     // Blog: "mis publicaciones" pide sesion aunque sea un GET
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/noticias/mias")).authenticated()
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/productos/**"),

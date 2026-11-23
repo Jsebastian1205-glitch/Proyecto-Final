@@ -286,3 +286,23 @@ function listarMisNoticias() {
 function eliminarNoticia(id) {
   return peticionApi(`/noticias/${id}`, { method: 'DELETE' });
 }
+
+// ── Contacto (/api/contacto) ──
+// Enviar es público (si hay sesión se manda el token para asociar la cuenta);
+// ver, cambiar el estado y eliminar mensajes es solo para ADMIN.
+
+function enviarMensajeContacto({ nombre, correo, motivo, mensaje }) {
+  return peticionApi('/contacto', { method: 'POST', body: { nombre, correo, motivo, mensaje } });
+}
+
+function listarMensajesContacto() {
+  return peticionApi('/contacto');
+}
+
+function cambiarEstadoMensajeContacto(id, estado) {
+  return peticionApi(`/contacto/${id}/estado`, { method: 'PATCH', body: { estado } });
+}
+
+function eliminarMensajeContacto(id) {
+  return peticionApi(`/contacto/${id}`, { method: 'DELETE' });
+}

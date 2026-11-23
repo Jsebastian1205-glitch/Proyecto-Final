@@ -37,6 +37,10 @@ function showPage(page) {
   if (page === 'blog' && typeof window.actualizarAccionesBlog === 'function') {
     window.actualizarAccionesBlog();
   }
+  // En Contacto se llenan nombre y correo si hay sesión
+  if (page === 'contacto' && typeof window.prepararContacto === 'function') {
+    window.prepararContacto();
+  }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1436,19 +1440,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Formulario de contacto: no hay endpoint de backend para esto todavía,
-  // así que solo confirmamos el envío al usuario y limpiamos el formulario.
-  const contactoForm = document.getElementById('contacto-form');
-  if (contactoForm) {
-    contactoForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      if (typeof mostrarExito === 'function') {
-        mostrarExito('¡Mensaje enviado! Te responderemos pronto.');
-      }
-      contactoForm.reset();
-    });
-  }
-
   // Punto de enganche para los módulos nuevos (auth.js / planes.js / cuenta.js
   // / admin.js): cada uno expone su propio inicializador solo si el script
   // correspondiente fue cargado, así este archivo no depende directamente
@@ -1458,6 +1449,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof window.inicializarCuenta === 'function') window.inicializarCuenta();
   if (typeof window.inicializarAdmin === 'function') window.inicializarAdmin();
   if (typeof window.inicializarCatalogo === 'function') window.inicializarCatalogo();
+  if (typeof window.inicializarContacto === 'function') window.inicializarContacto();
   if (typeof window.inicializarBlog === 'function') window.inicializarBlog();
 
   showPage('inicio');

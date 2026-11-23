@@ -78,11 +78,11 @@ Inicio ─┬─ Productos (filtro por categoría + buscador)
         ├─ Comparador (duelo entre 2 productos de la misma categoría)
         ├─ Blog (modal de artículo)
         ├─ Planes ── Suscribirme (requiere sesión)
-        ├─ Contacto
+        ├─ Contacto (formulario: queda guardado y lo lee el admin)
         ├─ [👤] Iniciar sesión ⇄ Registrarse
         └─ (con sesión) Menú de usuario
               ├─ Mi cuenta: Perfil · Seguridad (contraseña) · Suscripción (actual + historial)
-              ├─ Panel admin (solo ADMIN): Usuarios · Planes · Suscripciones · Catálogo
+              ├─ Panel admin (solo ADMIN): Usuarios · Planes · Suscripciones · Catálogo · Blog · Mensajes
               └─ Cerrar sesión
 ```
 
@@ -157,7 +157,8 @@ la base `buildzone`. Están en `src/test/java`:
 |---|---|
 | `integracion/ApiIntegracionTest` | API completa: registro, login, permisos por rol, suscripciones |
 | `integracion/BlogYCatalogoIntegracionTest` | Blog (público, 401 sin sesión, 403 sin plan de pago, solo el autor edita) y productos con precio, puntajes y ficha |
-| `service/impl/*Test` | Reglas de negocio de cada servicio con Mockito (auth, usuarios, planes, suscripciones, marcas, productos, noticias) |
+| `integracion/ContactoIntegracionTest` | Contacto: envío público, validaciones, antispam y gestión solo para ADMIN |
+| `service/impl/*Test` | Reglas de negocio de cada servicio con Mockito (auth, usuarios, planes, suscripciones, marcas, productos, noticias, contacto) |
 | `security/JwtServiceTest` | Generación y validación del token JWT |
 
 `iniciar.bat` no ejecuta las pruebas, así que no hace más lento el arranque.

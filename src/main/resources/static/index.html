@@ -411,6 +411,7 @@
         <button class="account-tab" data-admin-tab="suscripciones">Suscripciones</button>
         <button class="account-tab" data-admin-tab="catalogo">Catálogo</button>
         <button class="account-tab" data-admin-tab="blog">Blog</button>
+        <button class="account-tab" data-admin-tab="mensajes">Mensajes <span class="tab-badge" id="mensajes-sin-leer" hidden>0</span></button>
       </div>
 
       <div class="account-panel active" id="admin-panel-usuarios">
@@ -468,6 +469,18 @@
           <table class="admin-table" id="admin-blog-table">
             <thead>
               <tr><th>Título</th><th>Categoría</th><th>Publicada</th><th>Acciones</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="account-panel" id="admin-panel-mensajes">
+        <div class="admin-filtros" id="mensajes-filtros"></div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="admin-mensajes-table">
+            <thead>
+              <tr><th>#</th><th>De</th><th>Motivo</th><th>Recibido</th><th>Estado</th><th>Acciones</th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -611,23 +624,76 @@
       <h2 class="section-title">Hablemos</h2>
       <p class="section-sub">¿Tienes dudas o sugerencias? Escríbenos y te responderemos pronto.</p>
 
-      <form class="form-panel" id="contacto-form" style="max-width:480px;margin-top:2rem">
-        <div class="form-group">
-          <label class="form-label">Nombre</label>
-          <input type="text" class="form-input" placeholder="Tu nombre" required>
+      <div class="contacto-grid">
+        <div class="form-panel" id="contacto-panel">
+          <form id="contacto-form" novalidate>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="contacto-nombre">Nombre</label>
+                <input type="text" class="form-input" id="contacto-nombre" placeholder="Tu nombre" maxlength="100" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="contacto-correo">Correo electrónico</label>
+                <input type="email" class="form-input" id="contacto-correo" placeholder="tucorreo@ejemplo.com" maxlength="150" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contacto-motivo">Motivo</label>
+              <select class="form-input" id="contacto-motivo" required>
+                <option value="DUDA_PRODUCTO">Duda sobre un producto</option>
+                <option value="SUGERENCIA">Sugerencia</option>
+                <option value="PROBLEMA_CUENTA">Problema con mi cuenta</option>
+                <option value="PLANES">Planes y suscripciones</option>
+                <option value="OTRO">Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contacto-mensaje">Mensaje</label>
+              <textarea class="form-input" id="contacto-mensaje" rows="5" maxlength="1000" placeholder="Cuéntanos en qué podemos ayudarte" required></textarea>
+              <div class="contacto-contador" id="contacto-contador">0 / 1000</div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" id="contacto-enviar">Enviar mensaje</button>
+            <p class="contacto-nota">Usamos tu correo solo para responderte.</p>
+          </form>
+          <div class="contacto-ok" id="contacto-ok" hidden>
+            <div class="ok-icono">✓</div>
+            <h3>¡Mensaje recibido!</h3>
+            <div class="ticket" id="contacto-ticket">Mensaje #0</div>
+            <p>Te responderemos a <b id="contacto-ok-correo"></b>.</p>
+            <button type="button" class="btn btn-outline" id="contacto-otro" style="margin-top:1.25rem">Enviar otro mensaje</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Correo electrónico</label>
-          <input type="email" class="form-input" placeholder="tucorreo@ejemplo.com" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mensaje</label>
-          <textarea class="form-input" rows="4" placeholder="Cuéntanos en qué podemos ayudarte" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary btn-full">Enviar mensaje</button>
-      </form>
+        <aside class="contacto-info">
+          <div class="contacto-info-titulo">¿Qué pasa con tu mensaje?</div>
+          <ol class="contacto-pasos">
+            <li><b>Lo recibimos</b><span>Queda guardado y te mostramos un número de seguimiento.</span></li>
+            <li><b>El equipo lo lee</b><span>Lo revisa el administrador desde su panel.</span></li>
+            <li><b>Te respondemos</b><span>La respuesta llega a tu correo.</span></li>
+          </ol>
+          <div class="contacto-info-titulo" style="margin-top:1.5rem">Antes de escribir</div>
+          <p class="contacto-tip">Muchas dudas de compatibilidad se resuelven en la ficha técnica de cada producto o en el <a href="#" onclick="showPage('comparador');return false">Comparador</a>.</p>
+        </aside>
+      </div>
     </div>
   </section>
+</div>
+
+<!-- Modal: detalle de un mensaje de contacto (panel admin) -->
+<div class="modal-overlay" id="mensaje-modal">
+  <div class="modal modal-ancho">
+    <div class="modal-close" data-close-mensaje-modal="true">✕</div>
+    <div class="modal-header">
+      <div class="modal-icon">✉</div>
+      <div class="modal-title" id="mensaje-modal-title">Mensaje</div>
+    </div>
+    <dl class="msg-meta" id="mensaje-meta"></dl>
+    <div class="msg-full" id="mensaje-texto"></div>
+    <div class="msg-acciones">
+      <a class="btn btn-primary" id="mensaje-responder" href="#">Responder por correo</a>
+      <button type="button" class="btn btn-outline" id="mensaje-marcar">Marcar como respondido</button>
+    </div>
+    <p class="contacto-nota">"Responder por correo" abre tu programa de correo con el destinatario y el asunto ya escritos.</p>
+  </div>
 </div>
 
 <!-- Modal de inicio de sesión -->
@@ -716,6 +782,7 @@
 <script src="js/admin.js"></script>
 <script src="js/catalogo.js"></script>
 <script src="js/blog.js"></script>
+<script src="js/contacto.js"></script>
 <script src="js/script.js"></script>
 </body>
 </html>

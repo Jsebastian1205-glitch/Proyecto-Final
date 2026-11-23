@@ -140,3 +140,24 @@ CREATE TABLE IF NOT EXISTS detalle_comparacion (
     CONSTRAINT fk_detalle_comparacion FOREIGN KEY (id_comparacion) REFERENCES comparacion (id_comparacion) ON DELETE CASCADE,
     CONSTRAINT fk_detalle_producto FOREIGN KEY (id_producto) REFERENCES producto (id_producto)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- Formulario de contacto. Cualquier visitante puede escribir; el
+-- administrador lee los mensajes desde la pestana "Mensajes" del panel.
+-- id_usuario (opcional) guarda la cuenta de usuario_cuenta si quien
+-- escribio tenia sesion iniciada; no lleva llave foranea porque esa tabla
+-- se crea despues, en 01_usuarios_suscripciones.sql.
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS mensaje_contacto (
+    id_mensaje   BIGINT        NOT NULL AUTO_INCREMENT,
+    nombre       VARCHAR(100)  NOT NULL,
+    correo       VARCHAR(150)  NOT NULL,
+    motivo       VARCHAR(30)   NOT NULL COMMENT 'DUDA_PRODUCTO | SUGERENCIA | PROBLEMA_CUENTA | PLANES | OTRO',
+    mensaje      VARCHAR(1000) NOT NULL,
+    estado       VARCHAR(20)   NOT NULL DEFAULT 'NUEVO' COMMENT 'NUEVO | LEIDO | RESPONDIDO',
+    fecha_envio  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_usuario   BIGINT        DEFAULT NULL,
+    PRIMARY KEY (id_mensaje),
+    KEY idx_mensaje_contacto_correo_fecha (correo, fecha_envio),
+    KEY idx_mensaje_contacto_estado (estado)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
