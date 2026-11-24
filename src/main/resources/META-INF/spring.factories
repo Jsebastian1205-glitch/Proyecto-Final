@@ -1,0 +1,2 @@
+# Revisa las claves secretas antes de arrancar (ver ValidadorConfiguracion)
+org.springframework.boot.env.EnvironmentPostProcessor=com.buildzone.api.config.ValidadorConfiguracion

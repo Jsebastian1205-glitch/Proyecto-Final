@@ -88,13 +88,28 @@ Inicio ─┬─ Productos (filtro por categoría + buscador)
 
 ## Ambientes
 
-| | Desarrollo rápido | Desarrollo con XAMPP |
-|---|---|---|
-| Perfil Spring | `dev` | *(por defecto)* |
-| Base de datos | H2 en memoria | MySQL/MariaDB `buildzone` |
-| Esquema y datos | Hibernate + `datos-dev.sql` (84 productos) | Scripts de `database/mysql`, ejecutados solos al arrancar |
-| Datos iniciales | Admin + planes + catálogo de ejemplo | Admin + planes (el catálogo es el real) |
-| Comando | `iniciar.bat` o `mvn spring-boot:run -Dspring-boot.run.profiles=dev` | `iniciar.bat mysql` o `mvn spring-boot:run` |
+| | Desarrollo rápido | Desarrollo con XAMPP | Producción (internet) |
+|---|---|---|---|
+| Perfil Spring | `dev` | *(por defecto)* | `prod` |
+| Base de datos | H2 en memoria | MySQL/MariaDB `buildzone` | MySQL del hosting (Railway) |
+| Esquema y datos | Hibernate + `datos-dev.sql` (84 productos) | Scripts `00` a `03` de `database/mysql`, ejecutados solos al arrancar | Scripts `00` a `02` (**sin** cuentas de prueba) |
+| Claves | De ejemplo | De ejemplo (aviso en consola) | **Obligatorias** por variables de entorno; no arranca sin ellas |
+| Comando | `iniciar.bat` | `iniciar.bat mysql` | `Dockerfile` (ver `docs/DESPLIEGUE.md`) |
+
+Para publicar en internet sigue **[docs/DESPLIEGUE.md](docs/DESPLIEGUE.md)**. Las claves
+de `application.properties` son solo de ejemplo para trabajar en local; en producción la
+aplicación exige `JWT_SECRET`, `ADMIN_PASSWORD` y la contraseña de la base (plantilla en
+`.env.example`) y se niega a arrancar con valores de ejemplo o débiles.
+
+### Seguridad
+
+- Contraseñas con BCrypt; sesiones con JWT firmado (HMAC) y vigencia de 8 horas.
+- 5 intentos fallidos de inicio de sesión bloquean la cuenta 15 minutos; límites por
+  conexión para registro, contacto y "olvidé mi contraseña" (`buildzone.limites.*`).
+- Cabeceras: Content-Security-Policy, HSTS (por HTTPS), X-Frame-Options, Referrer-Policy,
+  Permissions-Policy, X-Content-Type-Options.
+- Permisos por rol en `SecurityConfig` y reglas de autoría y plan en los servicios.
+- Errores sin trazas internas; en producción, CORS cerrado y sin cuentas de prueba.
 
 ### Requisitos del equipo de desarrollo
 
@@ -161,6 +176,9 @@ la base `buildzone`. Están en `src/test/java`:
 | `integracion/RecuperacionIntegracionTest` | Recuperar contraseña: respuesta igual exista o no el correo, temporal del admin, acceso limitado y cambio obligatorio |
 | `integracion/ContactoIntegracionTest` | Contacto: envío público, validaciones, antispam y gestión solo para ADMIN |
 | `service/impl/*Test` | Reglas de negocio de cada servicio con Mockito (auth, usuarios, planes, suscripciones, marcas, productos, noticias, contacto, comparaciones) |
+| `integracion/SeguridadIntegracionTest` | Bloqueo tras 5 intentos fallidos (429), cabeceras de seguridad y HSTS |
+| `config/ValidadorConfiguracionTest` | El modo producción rechaza claves faltantes, de ejemplo o débiles |
+| `security/LimiteDeIntentosTest` | Límites de intentos por cuenta y por conexión, y que se liberan con el tiempo |
 | `security/JwtServiceTest` | Generación y validación del token JWT |
 
 `iniciar.bat` no ejecuta las pruebas, así que no hace más lento el arranque.

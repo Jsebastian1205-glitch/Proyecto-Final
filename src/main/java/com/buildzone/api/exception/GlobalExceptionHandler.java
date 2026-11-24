@@ -122,6 +122,13 @@ public class GlobalExceptionHandler {
                 "El metodo " + ex.getMethod() + " no esta permitido en esta ruta.", request);
     }
 
+    /** Limite de intentos superado (login, registro, formularios): 429. */
+    @ExceptionHandler(DemasiadosIntentosException.class)
+    public ResponseEntity<ErrorResponse> manejarDemasiadosIntentos(DemasiadosIntentosException ex,
+                                                                   HttpServletRequest request) {
+        return construir(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), request);
+    }
+
     /** Cualquier error no previsto: 500 sin exponer detalles internos al cliente. */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> manejarGeneral(Exception ex, HttpServletRequest request) {

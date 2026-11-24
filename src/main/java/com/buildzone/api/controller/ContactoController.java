@@ -2,6 +2,7 @@ package com.buildzone.api.controller;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.buildzone.api.dto.CambioEstadoMensajeRequest;
 import com.buildzone.api.dto.ContactoRequest;
 import com.buildzone.api.dto.MensajeContactoResponse;
+import com.buildzone.api.security.LimiteDeIntentos;
 import com.buildzone.api.security.UsuarioAutenticado;
 import com.buildzone.api.service.ContactoService;
 
@@ -31,15 +33,20 @@ import com.buildzone.api.service.ContactoService;
 public class ContactoController {
 
     private final ContactoService contactoService;
+    private final LimiteDeIntentos limiteDeIntentos;
 
-    public ContactoController(ContactoService contactoService) {
+    public ContactoController(ContactoService contactoService, LimiteDeIntentos limiteDeIntentos) {
         this.contactoService = contactoService;
+        this.limiteDeIntentos = limiteDeIntentos;
     }
 
     /** POST /api/contacto - guarda un mensaje y devuelve su numero. */
     @PostMapping
     public ResponseEntity<MensajeContactoResponse> enviar(@Valid @RequestBody ContactoRequest request,
-                                                          @AuthenticationPrincipal UsuarioAutenticado actual) {
+                                                          @AuthenticationPrincipal UsuarioAutenticado actual,
+                                                          HttpServletRequest http) {
+        // Ademas del limite por correo (servicio), un limite por conexion contra spam
+        limiteDeIntentos.consumirFormulario(http.getRemoteAddr());
         return ResponseEntity.status(HttpStatus.CREATED).body(contactoService.enviar(request, actual));
     }
 

@@ -16,7 +16,8 @@
 -- ya cifrada en BCrypt; por eso no se insertan aqui.
 -- =====================================================================
 
-USE buildzone;
+-- Sin la instruccion USE: la API ejecuta el script en la base a la que
+-- esta conectada (en la nube suele tener otro nombre).
 
 CREATE TABLE IF NOT EXISTS usuario_cuenta (
     id_usuario      BIGINT       NOT NULL AUTO_INCREMENT,

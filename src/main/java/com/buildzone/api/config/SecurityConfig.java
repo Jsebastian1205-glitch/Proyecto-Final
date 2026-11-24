@@ -16,6 +16,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.DelegatingRequestMatcherHeaderWriter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -39,6 +43,23 @@ public class SecurityConfig {
 
     private static final String ADMIN = "ADMIN";
 
+    /**
+     * Content-Security-Policy. 'unsafe-inline' es necesario porque index.html usa
+     * atributos onclick y style; aun asi bloquea scripts de otros dominios,
+     * plugins, formularios hacia otros sitios y conexiones a otras APIs.
+     */
+    static final String POLITICA_CONTENIDO = String.join("; ",
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: https:",
+            "connect-src 'self'",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'self'");
+
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
     private final RespuestaErrorSeguridad respuestaErrorSeguridad;
@@ -51,7 +72,12 @@ public class SecurityConfig {
         this.jwtService = jwtService;
         this.usuarioRepository = usuarioRepository;
         this.respuestaErrorSeguridad = respuestaErrorSeguridad;
-        this.origenesPermitidos = Arrays.stream(origenes.split(",")).map(String::trim).toList();
+        // Vacio = ningun otro sitio puede llamar a la API desde el navegador (en
+        // produccion la pagina y la API estan en el mismo dominio y no lo necesitan).
+        this.origenesPermitidos = Arrays.stream(origenes.split(","))
+                .map(String::trim)
+                .filter(o -> !o.isEmpty())
+                .toList();
     }
 
     @Bean
@@ -60,8 +86,23 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // Permite que la consola H2 (solo perfil dev) se muestre en un iframe del mismo origen.
-            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+            // Cabeceras de seguridad (ver CABECERAS_SEGURIDAD mas abajo)
+            .headers(headers -> headers
+                    // Ninguna otra pagina puede mostrar BuildZone dentro de un iframe
+                    // (sameOrigin y no deny: la consola H2 del perfil dev usa iframes).
+                    .frameOptions(frame -> frame.sameOrigin())
+                    // HTTPS obligatorio por un ano. Spring solo la envia en peticiones
+                    // HTTPS, asi que en http://localhost no tiene efecto.
+                    .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31_536_000))
+                    // No enviar la URL completa a otros sitios
+                    .referrerPolicy(ref -> ref.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                    .addHeaderWriter(new StaticHeadersWriter("Permissions-Policy",
+                            "camera=(), microphone=(), geolocation=(), payment=()"))
+                    // Politica de contenido: solo scripts, estilos y datos del propio sitio
+                    // (mas Google Fonts). No se aplica a la consola H2 del perfil dev.
+                    .addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(
+                            new NegatedRequestMatcher(antMatcher("/h2-console/**")),
+                            new StaticHeadersWriter("Content-Security-Policy", POLITICA_CONTENIDO))))
             .exceptionHandling(ex -> ex
                     .authenticationEntryPoint(respuestaErrorSeguridad)
                     .accessDeniedHandler(respuestaErrorSeguridad))

@@ -1,0 +1,13 @@
+# Solo se necesitan pom.xml, src/ y database/ para construir la imagen.
+.git
+.gitignore
+.env
+.env.*
+target/
+backend-java/
+docs/
+*.md
+*.bat
+.idea/
+.vscode/
+nbproject/

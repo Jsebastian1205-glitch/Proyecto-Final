@@ -236,6 +236,13 @@ Formulario de la página Contacto, tabla `mensaje_contacto`.
 La API no envía correos (no hay servidor SMTP configurado): el administrador responde desde
 su propio correo con el botón "Responder por correo" del panel (enlace `mailto:`).
 
+### Límites de intentos (429)
+
+`POST /api/auth/login`: 5 intentos fallidos sobre la misma cuenta en 15 minutos → 429
+`Too Many Requests` (aunque luego la contraseña sea correcta). También hay límites por IP para
+login, `POST /api/auth/registro`, `POST /api/contacto` y `POST /api/auth/recuperar`
+(configurables en `buildzone.limites.*`).
+
 ### Formato de error (todas las rutas)
 
 ```json
@@ -275,10 +282,11 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 1. Inicie Apache y MySQL en XAMPP.
 2. No hace falta importar nada a mano: al arrancar, la API ejecuta sola los scripts de
-   `database/mysql` (`00_estructura.sql`, `01_usuarios_suscripciones.sql` y `02_datos_completos.sql`).
-   Si la base `buildzone` no existe la crea, agrega las tablas que falten y carga los 84 productos con
-   su ficha técnica y precios de tiendas colombianas, el blog, duelos de ejemplo y 5 cuentas de prueba
-   (contraseña `Prueba1234`). Se repite en cada arranque sin duplicar ni borrar datos.
+   `database/mysql` (`00_estructura.sql`, `01_usuarios_suscripciones.sql`, `02_datos_completos.sql` y
+   `03_cuentas_prueba.sql`). Si la base `buildzone` no existe la crea, agrega las tablas que falten y carga
+   los 84 productos con su ficha técnica y precios de tiendas colombianas, el blog, duelos de ejemplo y
+   5 cuentas de prueba (contraseña `Prueba1234`). Se repite en cada arranque sin duplicar ni borrar datos.
+   En producción (perfil `prod`, ver `docs/DESPLIEGUE.md`) el script `03` **no** se ejecuta.
    Para desactivarlo: `spring.sql.init.mode=never` en `application-default.properties`.
 3. (Opcional) Los mismos scripts se pueden importar a mano en phpMyAdmin.
 4. Arranque la API:
